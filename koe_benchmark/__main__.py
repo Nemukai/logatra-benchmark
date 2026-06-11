@@ -39,6 +39,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="never call provider APIs; score from cached responses only",
     )
     run.add_argument(
+        "--workers",
+        type=int,
+        default=1,
+        help="concurrent transcription requests per provider (default: 1)",
+    )
+    run.add_argument(
         "--json",
         action="store_true",
         help="emit the aggregate report as JSON instead of a table",
@@ -87,6 +93,7 @@ def main(argv: list[str] | None = None) -> int:
             results_dir=Path(args.results_dir),
             score_only=args.score_only,
             split=args.split,
+            workers=args.workers,
         )
         if args.json:
             print(json.dumps(report, indent=2))

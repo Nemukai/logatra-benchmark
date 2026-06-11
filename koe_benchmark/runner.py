@@ -11,6 +11,7 @@ import dataclasses
 import json
 import time
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from .adapters import NotConfigured, Transcription, TranscriptionError, get_adapter
@@ -94,8 +95,12 @@ def run_benchmark(
     results_dir: str | Path = "results",
     score_only: bool = False,
     split: str | None = None,
+    workers: int = 1,
 ) -> dict:
     """Run providers over a manifest and aggregate scores.
+
+    `workers` > 1 transcribes samples concurrently within each provider
+    (cache files are per-sample, so concurrent writes never collide).
 
     Returns {"rows": [...per provider/split aggregate...], "skipped": {...}}.
     """
@@ -111,14 +116,39 @@ def run_benchmark(
     errors: dict[str, int] = defaultdict(int)
 
     for provider in providers:
-        for sample in samples:
-            try:
-                record = transcribe_sample(
-                    provider, sample, manifest_path.parent, results_dir, score_only
+        # Probe with the first sample serially so a missing key skips the
+        # provider before we spin up a pool.
+        try:
+            records: list[dict | None] = []
+            if samples:
+                records.append(
+                    transcribe_sample(
+                        provider, samples[0], manifest_path.parent, results_dir, score_only
+                    )
                 )
-            except NotConfigured as exc:
-                skipped[provider] = str(exc)
-                break
+                rest = samples[1:]
+                if workers > 1 and rest:
+                    with ThreadPoolExecutor(max_workers=workers) as pool:
+                        records.extend(
+                            pool.map(
+                                lambda s: transcribe_sample(
+                                    provider, s, manifest_path.parent, results_dir, score_only
+                                ),
+                                rest,
+                            )
+                        )
+                else:
+                    records.extend(
+                        transcribe_sample(
+                            provider, s, manifest_path.parent, results_dir, score_only
+                        )
+                        for s in rest
+                    )
+        except NotConfigured as exc:
+            skipped[provider] = str(exc)
+            continue
+
+        for sample, record in zip(samples, records):
             if record is None:
                 continue  # score-only and no cache
             if "error" in record:
