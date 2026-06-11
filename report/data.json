@@ -1,16 +1,16 @@
 {
  "by_provider": {
   "sarvam|public": {
-   "samples": 2268,
-   "wer": 0.404,
-   "cer": 0.285,
-   "wer_script_agnostic": 0.3956,
-   "latency_median_s": 1.069,
-   "latency_p90_s": 3.719,
-   "rtf_median": 0.1466,
-   "cost_usd_total": 3.1557,
+   "samples": 7204,
+   "wer": 0.3597,
+   "cer": 0.2449,
+   "wer_script_agnostic": 0.3433,
+   "latency_median_s": 1.091,
+   "latency_p90_s": 3.758,
+   "rtf_median": 0.1546,
+   "cost_usd_total": 9.125,
    "cost_usd_per_hour": 0.539,
-   "audio_minutes": 351.3
+   "audio_minutes": 1015.8
   },
   "gemini|public": {
    "samples": 799,
@@ -49,16 +49,16 @@
    "audio_minutes": 54.9
   },
   "whisper|public": {
-   "samples": 3809,
-   "wer": 0.5609,
-   "cer": 0.405,
-   "wer_script_agnostic": 0.5365,
-   "latency_median_s": 2.058,
-   "latency_p90_s": 3.984,
-   "rtf_median": 0.3413,
-   "cost_usd_total": 2.6746,
-   "cost_usd_per_hour": 0.3601,
-   "audio_minutes": 445.7
+   "samples": 6537,
+   "wer": 0.5732,
+   "cer": 0.3613,
+   "wer_script_agnostic": 0.544,
+   "latency_median_s": 2.248,
+   "latency_p90_s": 4.518,
+   "rtf_median": 0.3105,
+   "cost_usd_total": 5.3092,
+   "cost_usd_per_hour": 0.36,
+   "audio_minutes": 884.8
   },
   "sarvam|heldout": {
    "samples": 96,
@@ -123,64 +123,64 @@
  },
  "by_provider_comparable": {
   "sarvam|public": {
-   "samples": 109,
-   "wer": 0.4712,
-   "cer": 0.4248,
-   "wer_script_agnostic": 0.4531,
-   "latency_median_s": 0.974,
-   "latency_p90_s": 3.68,
-   "rtf_median": 0.1779,
-   "cost_usd_total": 0.1068,
+   "samples": 197,
+   "wer": 0.3531,
+   "cer": 0.2529,
+   "wer_script_agnostic": 0.3351,
+   "latency_median_s": 1.023,
+   "latency_p90_s": 3.738,
+   "rtf_median": 0.1461,
+   "cost_usd_total": 0.2352,
    "cost_usd_per_hour": 0.539,
-   "audio_minutes": 11.9
+   "audio_minutes": 26.2
   },
   "whisper|public": {
-   "samples": 109,
-   "wer": 0.5837,
-   "cer": 0.4617,
-   "wer_script_agnostic": 0.5622,
-   "latency_median_s": 2.088,
-   "latency_p90_s": 3.883,
-   "rtf_median": 0.3514,
-   "cost_usd_total": 0.0713,
-   "cost_usd_per_hour": 0.3601,
-   "audio_minutes": 11.9
+   "samples": 197,
+   "wer": 0.5786,
+   "cer": 0.378,
+   "wer_script_agnostic": 0.5516,
+   "latency_median_s": 2.32,
+   "latency_p90_s": 4.42,
+   "rtf_median": 0.3289,
+   "cost_usd_total": 0.1571,
+   "cost_usd_per_hour": 0.36,
+   "audio_minutes": 26.2
   },
   "gemini|public": {
-   "samples": 109,
-   "wer": 0.4404,
-   "cer": 0.3986,
-   "wer_script_agnostic": 0.4257,
-   "latency_median_s": 2.892,
-   "latency_p90_s": 4.029,
-   "rtf_median": 0.5451,
-   "cost_usd_total": 0.0897,
-   "cost_usd_per_hour": 0.453,
-   "audio_minutes": 11.9
+   "samples": 197,
+   "wer": 0.3257,
+   "cer": 0.2364,
+   "wer_script_agnostic": 0.3099,
+   "latency_median_s": 3.011,
+   "latency_p90_s": 4.165,
+   "rtf_median": 0.4276,
+   "cost_usd_total": 0.1944,
+   "cost_usd_per_hour": 0.4454,
+   "audio_minutes": 26.2
   },
   "voxtral|public": {
-   "samples": 109,
-   "wer": 7.3521,
-   "cer": 7.6296,
-   "wer_script_agnostic": 7.342,
-   "latency_median_s": 1.224,
-   "latency_p90_s": 3.275,
-   "rtf_median": 0.2038,
-   "cost_usd_total": 0.0768,
-   "cost_usd_per_hour": 0.3875,
-   "audio_minutes": 11.9
+   "samples": 197,
+   "wer": 4.2582,
+   "cer": 3.976,
+   "wer_script_agnostic": 4.2446,
+   "latency_median_s": 1.258,
+   "latency_p90_s": 2.375,
+   "rtf_median": 0.1614,
+   "cost_usd_total": 0.16,
+   "cost_usd_per_hour": 0.3666,
+   "audio_minutes": 26.2
   },
   "gpt-audio|public": {
-   "samples": 109,
-   "wer": 0.8909,
-   "cer": 0.8209,
-   "wer_script_agnostic": 0.8862,
-   "latency_median_s": 1.564,
-   "latency_p90_s": 2.586,
-   "rtf_median": 0.3016,
-   "cost_usd_total": 0.2847,
-   "cost_usd_per_hour": 1.4368,
-   "audio_minutes": 11.9
+   "samples": 197,
+   "wer": 0.6376,
+   "cer": 0.5218,
+   "wer_script_agnostic": 0.6284,
+   "latency_median_s": 1.684,
+   "latency_p90_s": 2.55,
+   "rtf_median": 0.2254,
+   "cost_usd_total": 0.617,
+   "cost_usd_per_hour": 1.4137,
+   "audio_minutes": 26.2
   },
   "sarvam|heldout": {
    "samples": 96,
@@ -244,7 +244,7 @@
   }
  },
  "comparable_counts": {
-  "public": 109,
+  "public": 197,
   "heldout": 96
  },
  "by_provider_dataset": {
@@ -309,16 +309,16 @@
    "audio_minutes": 107.0
   },
   "sarvam|mucs_hinglish": {
-   "samples": 1072,
-   "wer": 0.5427,
-   "cer": 0.4987,
-   "wer_script_agnostic": 0.5234,
-   "latency_median_s": 1.014,
-   "latency_p90_s": 3.66,
-   "rtf_median": 0.2123,
-   "cost_usd_total": 0.9581,
+   "samples": 3112,
+   "wer": 0.5473,
+   "cer": 0.5011,
+   "wer_script_agnostic": 0.5277,
+   "latency_median_s": 1.015,
+   "latency_p90_s": 3.652,
+   "rtf_median": 0.2101,
+   "cost_usd_total": 2.7533,
    "cost_usd_per_hour": 0.539,
-   "audio_minutes": 106.6
+   "audio_minutes": 306.5
   },
   "whisper|mucs_hinglish": {
    "samples": 3129,
@@ -368,17 +368,29 @@
    "cost_usd_per_hour": 1.4531,
    "audio_minutes": 10.1
   },
+  "sarvam|gramvaani": {
+   "samples": 2908,
+   "wer": 0.2753,
+   "cer": 0.1404,
+   "wer_script_agnostic": 0.2559,
+   "latency_median_s": 1.132,
+   "latency_p90_s": 3.855,
+   "rtf_median": 0.1231,
+   "cost_usd_total": 4.1919,
+   "cost_usd_per_hour": 0.5389,
+   "audio_minutes": 466.7
+  },
   "whisper|gramvaani": {
-   "samples": 180,
-   "wer": 0.5594,
-   "cer": 0.3129,
-   "wer_script_agnostic": 0.5282,
-   "latency_median_s": 2.491,
-   "latency_p90_s": 4.465,
-   "rtf_median": 0.2816,
-   "cost_usd_total": 0.1699,
+   "samples": 2908,
+   "wer": 0.5809,
+   "cer": 0.3275,
+   "wer_script_agnostic": 0.5483,
+   "latency_median_s": 2.607,
+   "latency_p90_s": 5.38,
+   "rtf_median": 0.2768,
+   "cost_usd_total": 2.8045,
    "cost_usd_per_hour": 0.36,
-   "audio_minutes": 28.3
+   "audio_minutes": 467.4
   },
   "gemini|gramvaani": {
    "samples": 100,
@@ -415,18 +427,6 @@
    "cost_usd_total": 0.3777,
    "cost_usd_per_hour": 1.392,
    "audio_minutes": 16.3
-  },
-  "sarvam|gramvaani": {
-   "samples": 12,
-   "wer": 0.2597,
-   "cer": 0.1318,
-   "wer_script_agnostic": 0.2269,
-   "latency_median_s": 0.986,
-   "latency_p90_s": 1.062,
-   "rtf_median": 0.095,
-   "cost_usd_total": 0.0178,
-   "cost_usd_per_hour": 0.5389,
-   "audio_minutes": 2.0
   },
   "sarvam|heldout_yt": {
    "samples": 96,
@@ -635,28 +635,28 @@
    "audio_minutes": 6.5
   },
   "sarvam|hi": {
-   "samples": 207,
-   "wer": 0.1476,
-   "cer": 0.1174,
-   "wer_script_agnostic": 0.1353,
-   "latency_median_s": 1.493,
-   "latency_p90_s": 3.796,
-   "rtf_median": 0.0867,
-   "cost_usd_total": 0.5146,
-   "cost_usd_per_hour": 0.539,
-   "audio_minutes": 57.3
+   "samples": 3103,
+   "wer": 0.2609,
+   "cer": 0.1378,
+   "wer_script_agnostic": 0.2423,
+   "latency_median_s": 1.146,
+   "latency_p90_s": 3.848,
+   "rtf_median": 0.1203,
+   "cost_usd_total": 4.6887,
+   "cost_usd_per_hour": 0.5389,
+   "audio_minutes": 522.0
   },
   "whisper|hi": {
-   "samples": 376,
-   "wer": 0.4174,
-   "cer": 0.2415,
-   "wer_script_agnostic": 0.3907,
-   "latency_median_s": 2.949,
-   "latency_p90_s": 7.268,
-   "rtf_median": 0.2639,
-   "cost_usd_total": 0.5049,
+   "samples": 3104,
+   "wer": 0.5553,
+   "cer": 0.3142,
+   "wer_script_agnostic": 0.5236,
+   "latency_median_s": 2.643,
+   "latency_p90_s": 5.748,
+   "rtf_median": 0.275,
+   "cost_usd_total": 3.1395,
    "cost_usd_per_hour": 0.36,
-   "audio_minutes": 84.1
+   "audio_minutes": 523.2
   },
   "gemini|hi": {
    "samples": 246,
@@ -1019,16 +1019,16 @@
    "audio_minutes": 8.2
   },
   "sarvam|hi-en": {
-   "samples": 1072,
-   "wer": 0.5427,
-   "cer": 0.4987,
-   "wer_script_agnostic": 0.5234,
-   "latency_median_s": 1.014,
-   "latency_p90_s": 3.66,
-   "rtf_median": 0.2123,
-   "cost_usd_total": 0.9581,
+   "samples": 3112,
+   "wer": 0.5473,
+   "cer": 0.5011,
+   "wer_script_agnostic": 0.5277,
+   "latency_median_s": 1.015,
+   "latency_p90_s": 3.652,
+   "rtf_median": 0.2101,
+   "cost_usd_total": 2.7533,
    "cost_usd_per_hour": 0.539,
-   "audio_minutes": 106.6
+   "audio_minutes": 306.5
   },
   "whisper|hi-en": {
    "samples": 3129,
@@ -1096,6 +1096,6 @@
   "sarvam",
   "whisper"
  ],
- "row_count": 8492,
+ "row_count": 16156,
  "sample_count": 7349
 }

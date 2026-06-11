@@ -41,9 +41,19 @@ LANGUAGE_MAP = {
 
 
 class SarvamAdapter:
-    name = "sarvam"
+    """Sarvam STT. Two registered entrants share this adapter:
 
-    def __init__(self, timeout: float = 120.0) -> None:
+    sarvam        -> saarika:v2.5 (legacy line, 12 languages)
+    sarvam-saaras -> saaras:v3, mode=transcribe (Koe production's model,
+                     23 languages). Independent on the held-out split: it
+                     did not contribute silver-reference hypotheses.
+    """
+
+    def __init__(self, name: str = "sarvam", default_model: str = "saarika:v2.5",
+                 mode: str | None = None, timeout: float = 120.0) -> None:
+        self.name = name
+        self.default_model = default_model
+        self.mode = mode
         self.timeout = timeout
 
     def transcribe(self, audio_path: Path, language: str | None = None) -> Transcription:
@@ -52,12 +62,14 @@ class SarvamAdapter:
         api_key = os.environ.get("SARVAM_API_KEY", "").strip() or require_env(
             "SARVAM_API_SUBSCRIPTION_KEY", "Sarvam"
         )
-        model = os.environ.get("KOE_SARVAM_MODEL", "saarika:v2.5")
+        model = os.environ.get("KOE_SARVAM_MODEL", "") or self.default_model
         language_code = LANGUAGE_MAP.get(language or "", "unknown")
 
         with audio_path.open("rb") as fh:
             files = {"file": (audio_path.name, fh, "audio/wav")}
             data = {"model": model, "language_code": language_code}
+            if self.mode:
+                data["mode"] = self.mode
             try:
                 resp = httpx.post(
                     API_URL,

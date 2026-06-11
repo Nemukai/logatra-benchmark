@@ -1,1 +1,8 @@
 === FULL RUN START Thu Jun 11 20:00:23 IST 2026 ===
+STAGE whisper DONE
+STAGE sarvam DONE
+STAGE openrouter FAILED
+wrote report/data.json (16156 scored rows, 7349 samples)
+STAGE scoring DONE
+=== ALL DONE Thu Jun 11 21:13:31 IST 2026 ===
+MOPUP DONE

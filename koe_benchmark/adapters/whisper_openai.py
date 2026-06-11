@@ -41,7 +41,15 @@ class WhisperOpenAIAdapter:
         # Whisper takes ISO 639-1 hints ("hi", "ta", ...). Strip any region tag.
         lang_hint = (language or "").split("-")[0] or None
 
-        payload = self._request(api_key, model, audio_path, lang_hint, "verbose_json")
+        try:
+            payload = self._request(api_key, model, audio_path, lang_hint, "verbose_json")
+        except TranscriptionError as exc:
+            # whisper-1 rejects several Indic hint codes (as, or, ...);
+            # fall back to auto-detect rather than failing the sample.
+            if "unsupported_language" not in str(exc):
+                raise
+            lang_hint = None
+            payload = self._request(api_key, model, audio_path, None, "verbose_json")
         if payload is None:  # model rejected verbose_json
             payload = self._request(api_key, model, audio_path, lang_hint, "json")
             if payload is None:
@@ -90,7 +98,11 @@ class WhisperOpenAIAdapter:
             except httpx.HTTPError as exc:
                 raise TranscriptionError(f"OpenAI request failed: {exc}") from exc
 
-        if resp.status_code == 400 and response_format == "verbose_json":
+        if (
+            resp.status_code == 400
+            and response_format == "verbose_json"
+            and "unsupported_language" not in resp.text
+        ):
             return None  # caller falls back to plain json
         if resp.status_code != 200:
             raise TranscriptionError(

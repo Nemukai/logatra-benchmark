@@ -33,9 +33,11 @@ from koe_benchmark.manifest import load_manifest  # noqa: E402
 from koe_benchmark.metrics import normalize_text, romanize, score_asr  # noqa: E402
 from koe_benchmark.runner import _cache_path  # noqa: E402
 
-PROVIDERS = ("sarvam", "whisper", "gemini", "voxtral", "gpt-audio")
+PROVIDERS = ("sarvam", "sarvam-saaras", "whisper", "gemini", "voxtral", "gpt-audio")
 INR_PER_USD = 83.5
-FLAT_RATES_USD_PER_MIN = {"sarvam": 0.75 / INR_PER_USD, "whisper": 0.006}
+FLAT_RATES_USD_PER_MIN = {"sarvam": 0.75 / INR_PER_USD,
+                          "sarvam-saaras": 0.75 / INR_PER_USD,
+                          "whisper": 0.006}
 SILVER_CONTRIBUTORS = {"sarvam", "gemini", "whisper"}
 
 

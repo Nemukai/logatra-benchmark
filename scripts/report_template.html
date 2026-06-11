@@ -154,9 +154,9 @@ tr:hover td{background:rgba(59,53,46,.45)}
 <script>
 const DATA = /*__DATA__*/null;
 const CASES = /*__CASES__*/null;
-const P = ["sarvam","whisper","gemini","voxtral","gpt-audio"];
-const PCOLOR = {sarvam:"#3EA0B2",whisper:"#8670AA",gemini:"#E89A48",voxtral:"#C96F79","gpt-audio":"#619C4E"};
-const PLABEL = {sarvam:"Sarvam (saarika)",whisper:"OpenAI Whisper",gemini:"Gemini 3.5 Flash",voxtral:"Mistral Voxtral","gpt-audio":"OpenAI gpt-audio"};
+const P = ["sarvam-saaras","sarvam","whisper","gemini","voxtral","gpt-audio"];
+const PCOLOR = {"sarvam-saaras":"#42AD94",sarvam:"#3EA0B2",whisper:"#8670AA",gemini:"#E89A48",voxtral:"#C96F79","gpt-audio":"#619C4E"};
+const PLABEL = {"sarvam-saaras":"Sarvam saaras v3",sarvam:"Sarvam saarika v2.5",whisper:"OpenAI Whisper",gemini:"Gemini 3.5 Flash",voxtral:"Mistral Voxtral","gpt-audio":"OpenAI gpt-audio"};
 const ink300="#B0A695", grid="rgba(236,228,212,.07)";
 Chart.defaults.color=ink300;Chart.defaults.font.family="'Plus Jakarta Sans',sans-serif";Chart.defaults.font.size=11.5;
 Chart.defaults.borderColor=grid;
@@ -262,7 +262,7 @@ renderBoard("public");
 })();
 
 document.getElementById("modelnote").textContent =
-  "sarvam saarika:v2.5 · openai whisper-1 · google/gemini-3.5-flash via OpenRouter, reasoning disabled · mistralai/voxtral-small-24b-2507 · openai/gpt-audio. Costs are measured from per-call billing (OpenRouter) or list price (Sarvam ₹0.75/min, Whisper $0.006/min).";
+  "sarvam saaras:v3 (mode=transcribe, the model Koe runs in production) · sarvam saarika:v2.5 · openai whisper-1 (language hint auto-detect fallback for unsupported codes) · google/gemini-3.5-flash via OpenRouter, reasoning effort minimal · mistralai/voxtral-small-24b-2507 · openai/gpt-audio. Costs measured from per-call billing (OpenRouter) or list price (Sarvam ₹0.75/min, Whisper $0.006/min). Saaras v3 and the OpenRouter entrants did not all see identical public coverage; the leaderboard uses only the intersection.";
 </script>
 </body>
 </html>

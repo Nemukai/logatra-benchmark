@@ -19,6 +19,11 @@ def get_adapter(name: str) -> STTAdapter:
         from .sarvam import SarvamAdapter
 
         return SarvamAdapter()
+    if key in ("sarvam-saaras", "saaras"):
+        from .sarvam import SarvamAdapter
+
+        return SarvamAdapter(name="sarvam-saaras", default_model="saaras:v3",
+                             mode="transcribe")
     if key in ("whisper", "openai", "whisper_openai"):
         from .whisper_openai import WhisperOpenAIAdapter
 
@@ -59,6 +64,7 @@ _OPENROUTER_AUDIO = {
 
 PROVIDERS = (
     "sarvam",
+    "sarvam-saaras",
     "whisper",
     "gemini",
     "voxtral",
