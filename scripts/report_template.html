@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Koe Benchmark — Indic speech-to-text, measured</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --ink900:#141210;--ink800:#262220;--ink700:#3B352E;--ink600:#524A3E;
+  --ink500:#6D6455;--ink400:#8E8474;--ink300:#B0A695;--ink100:#DED5C3;
+  --ink50:#ECE4D4;--sand:#F2EBDD;
+  --kai500:#1F869A;--kai400:#3EA0B2;--kai300:#72BCC9;
+  --yuhi500:#D17B2E;--yuhi400:#E89A48;
+  --momo500:#C96F79;--hina500:#6C5494;--hina400:#8670AA;--limu500:#47833A;--limu400:#619C4E;
+  --hairline:rgba(82,74,62,.38);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--ink900);color:var(--ink50);
+  font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;
+  font-size:15px;line-height:1.6;position:relative;min-height:100vh;
+}
+body::before{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
+  background-image:url("data:image/svg+xml,<svg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size:256px;opacity:.11;}
+body::after{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
+  background-image:
+  url("data:image/svg+xml,<svg viewBox='0 0 220 220' xmlns='http://www.w3.org/2000/svg'><g stroke='%23F6F0E7' stroke-opacity='.03' stroke-width='.85' stroke-linecap='round' fill='none'><path d='M21 34l14 11'/><path d='M180 22l9 8'/><path d='M64 92l19 14'/><path d='M150 130l26 19'/><path d='M30 170l12 9'/><path d='M120 60l7 5'/><path d='M88 200l16 -3'/><path d='M200 90l-8 14'/><path d='M48 16l24 5'/><path d='M140 180l11 8'/><path d='M12 116l8 6'/><path d='M172 158l6 4'/></g></svg>"),
+  url("data:image/svg+xml,<svg viewBox='0 0 150 150' xmlns='http://www.w3.org/2000/svg'><g fill='%23FFFFFF' opacity='.04'><circle cx='14' cy='22' r='1.1'/><circle cx='66' cy='9' r='.8'/><circle cx='118' cy='40' r='1.3'/><circle cx='38' cy='80' r='.9'/><circle cx='96' cy='104' r='1.2'/><circle cx='140' cy='128' r='.8'/><circle cx='22' cy='132' r='1.4'/><circle cx='74' cy='58' r='.9'/></g></svg>");
+  background-size:220px,150px;}
+main,nav,footer{position:relative;z-index:2}
+nav{display:flex;align-items:baseline;gap:24px;padding:20px 5vw;border-bottom:.5px solid var(--hairline)}
+nav .mark{font-family:'Instrument Serif',serif;font-size:22px;color:var(--sand)}
+nav .mark span{color:var(--kai400)}
+nav .links{margin-left:auto;display:flex;gap:24px;font-size:13px}
+nav a{color:var(--ink300);text-decoration:none;transition:color .15s ease-out}
+nav a:hover{color:var(--sand)}
+.wrap{max-width:1280px;margin:0 auto;padding:0 5vw}
+header.hero{padding:88px 0 56px}
+h1{font-family:'Instrument Serif',serif;font-weight:400;font-size:clamp(34px,5vw,58px);line-height:1.1;letter-spacing:-.02em;color:var(--sand);max-width:760px}
+h1 em{font-style:italic;color:var(--kai300)}
+.hero p{margin-top:20px;max-width:620px;color:var(--ink300);font-size:16px}
+.statstrip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));border-top:.5px solid var(--hairline);border-bottom:.5px solid var(--hairline);margin:48px 0 0}
+.statstrip div{padding:24px 20px;border-right:.5px solid var(--hairline)}
+.statstrip div:last-child{border-right:none}
+.statstrip b{display:block;font-family:'JetBrains Mono',monospace;font-weight:500;font-size:26px;color:var(--sand)}
+.statstrip span{font-size:12.5px;color:var(--ink400)}
+section{padding:72px 0 0}
+h2{font-family:'Instrument Serif',serif;font-weight:400;font-size:30px;color:var(--sand);letter-spacing:-.01em}
+.sub{color:var(--ink400);font-size:14px;margin:8px 0 28px;max-width:640px}
+.toggle{display:inline-flex;border:.5px solid var(--hairline);border-radius:8px;overflow:hidden;font-size:13px;margin-bottom:20px}
+.toggle button{background:none;border:none;color:var(--ink300);padding:8px 18px;font-family:inherit;font-size:inherit;cursor:pointer;transition:background .15s ease-out,color .15s}
+.toggle button.on{background:var(--ink700);color:var(--sand)}
+.toggle button:focus-visible{outline:2px solid var(--kai400);outline-offset:-2px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-size:11.5px;font-weight:500;color:var(--ink400);text-transform:none;text-align:right;padding:10px 14px;border-bottom:.5px solid var(--hairline)}
+th:first-child,td:first-child{text-align:left}
+td{padding:14px;border-bottom:.5px solid var(--hairline);font-family:'JetBrains Mono',monospace;font-size:13.5px;text-align:right;color:var(--ink100)}
+td.prov{font-family:'Plus Jakarta Sans',sans-serif;font-weight:500;color:var(--sand);font-size:14px}
+td .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:10px;vertical-align:1px}
+tr.best td{background:rgba(31,134,154,.10)}
+tr:hover td{background:rgba(59,53,46,.45)}
+.badge{font-size:10.5px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--ink400);border:.5px solid var(--hairline);border-radius:4px;padding:1px 6px;margin-left:8px;vertical-align:2px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;border:.5px solid var(--hairline)}
+.grid2>div{padding:32px;border-right:.5px solid var(--hairline);border-bottom:.5px solid var(--hairline);min-width:0}
+.grid2>div:nth-child(2n){border-right:none}
+.grid2>div:nth-last-child(-n+2){border-bottom:none}
+.grid2 h3{font-size:15px;font-weight:600;color:var(--sand);margin-bottom:4px}
+.grid2 .note{font-size:12.5px;color:var(--ink400);margin-bottom:18px}
+.chartbox{position:relative;height:300px}
+.case{border:.5px solid var(--hairline);border-bottom:none}
+.case:last-of-type{border-bottom:.5px solid var(--hairline)}
+.case .meta{display:flex;gap:16px;align-items:baseline;padding:18px 28px;border-bottom:.5px solid var(--hairline);background:rgba(38,34,32,.6)}
+.case .meta b{font-family:'JetBrains Mono',monospace;font-weight:500;font-size:12.5px;color:var(--kai300)}
+.case .meta span{font-size:12px;color:var(--ink400)}
+.row{display:grid;grid-template-columns:150px 1fr 90px;border-bottom:.5px solid var(--hairline)}
+.row:last-child{border-bottom:none}
+.row .who{padding:16px 0 16px 28px;font-size:13px;font-weight:500;color:var(--ink300)}
+.row .who .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px}
+.row .txt{padding:16px 20px;font-size:14.5px;line-height:1.7;color:var(--ink100);border-left:.5px solid var(--hairline)}
+.row .wer{padding:16px 20px 16px 0;text-align:right;font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--ink400)}
+.row.ref .txt{color:var(--sand)}
+.row.ref .who{color:var(--sand);font-weight:600}
+.row:hover{background:rgba(59,53,46,.35)}
+.foot{margin-top:88px;border-top:.5px solid var(--hairline);padding:36px 5vw;font-size:12.5px;color:var(--ink400);display:flex;gap:32px;flex-wrap:wrap}
+.foot p{max-width:520px}
+@media (max-width:860px){
+  .grid2{grid-template-columns:1fr}
+  .grid2>div{border-right:none}
+  .grid2>div:nth-last-child(-n+2){border-bottom:.5px solid var(--hairline)}
+  .grid2>div:last-child{border-bottom:none}
+  .row{grid-template-columns:110px 1fr}
+  .row .wer{grid-column:2;padding:0 20px 14px;text-align:left}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+</style>
+</head>
+<body>
+<nav><div class="mark">nemukai <span>/ koe benchmark</span></div>
+<div class="links"><a href="#leaderboard">leaderboard</a><a href="#charts">charts</a><a href="#sidebyside">side by side</a><a href="#method">method</a></div></nav>
+<main class="wrap">
+<header class="hero">
+  <h1>How well do speech APIs actually hear <em>India</em>?</h1>
+  <p>Koe Benchmark measures transcription accuracy, speed, and cost across Indic languages, Hinglish code-mixing, and real-world telephony audio. Public datasets give the baseline; a fresh held-out set collected after every provider's training cutoff gives the honest number.</p>
+  <div class="statstrip" id="statstrip"></div>
+</header>
+
+<section id="leaderboard">
+  <h2>Leaderboard</h2>
+  <p class="sub">Word error rate, lower is better. Strict WER counts script choice as an error; script-agnostic WER romanizes both sides first, the fairer metric for code-mixed speech.</p>
+  <div class="toggle" role="tablist" id="splitToggle">
+    <button class="on" data-split="public">public datasets</button>
+    <button data-split="heldout">held-out (fresh 2026)</button>
+  </div>
+  <table id="board"><thead><tr>
+    <th>provider</th><th>samples</th><th>WER</th><th>script-agnostic WER</th><th>CER</th><th>median latency</th><th>speed (RTF)</th><th>$ / audio hr</th>
+  </tr></thead><tbody></tbody></table>
+</section>
+
+<section id="charts">
+  <h2>The shape of the gap</h2>
+  <p class="sub">Every chart uses script-agnostic WER unless marked. Toggle providers by clicking legend entries.</p>
+  <div class="grid2">
+    <div><h3>Accuracy by dataset</h3><div class="note">read speech (FLEURS) vs code-mixed Hinglish (MUCS) vs noisy telephony (Gramvaani) vs fresh YouTube</div><div class="chartbox"><canvas id="cDataset"></canvas></div></div>
+    <div><h3>Accuracy by language</h3><div class="note">script-agnostic WER on FLEURS test splits</div><div class="chartbox"><canvas id="cLang"></canvas></div></div>
+    <div><h3>Accuracy vs speed</h3><div class="note">bubble size = cost per audio hour · x: median seconds per clip · y: WER</div><div class="chartbox"><canvas id="cScatter"></canvas></div></div>
+    <div><h3>Cost & throughput</h3><div class="note">dollars per audio hour and real-time factor (processing seconds per audio second)</div><div class="chartbox"><canvas id="cCost"></canvas></div></div>
+  </div>
+</section>
+
+<section id="sidebyside">
+  <h2>Side by side</h2>
+  <p class="sub">The samples where providers disagree most. Watch for script choice (Devanagari vs Latin for the same English words), dropped phrases, and outright hallucination.</p>
+  <div id="cases"></div>
+</section>
+
+<section id="method">
+  <h2>Method, honestly</h2>
+  <div class="grid2">
+    <div><h3>Two-layer design</h3><div class="note" style="margin:0">Public datasets (FLEURS, MUCS 2021, Gramvaani) are almost certainly in providers' training data; they are reported as the contaminated baseline. The held-out layer is Creative-Commons YouTube audio published January–June 2026, segmented and reference-checked after collection. It cannot have been trained on.</div></div>
+    <div><h3>Silver references</h3><div class="note" style="margin:0">Held-out references come from multi-model consensus (medoid under a script-agnostic distance, cluster-agreement gate). Sarvam, Gemini, and Whisper contributed hypotheses, so their held-out scores are upper bounds; Voxtral and gpt-audio are fully independent entrants. 36 of 132 chunks failed consensus and await human adjudication.</div></div>
+    <div><h3>Metrics</h3><div class="note" style="margin:0">Indic-aware normalization before scoring: NFC, Indic punctuation and digit mapping, whitespace collapse. Script-agnostic WER additionally romanizes Devanagari (IAST, schwa-deleted) so "स्टार्ट" and "start" match. Latency is wall-clock per API call from this network; treat comparatively, not absolutely.</div></div>
+    <div><h3>Models as run</h3><div class="note" style="margin:0" id="modelnote"></div></div>
+  </div>
+</section>
+</main>
+<footer class="foot"><div>koe benchmark · nemukai · 2026</div><p>Built with the Koe eval harness. Raw per-sample responses are cached and reproducible; scores regenerate offline with --score-only.</p></footer>
+
+<script>
+const DATA = /*__DATA__*/null;
+const CASES = /*__CASES__*/null;
+const P = ["sarvam","whisper","gemini","voxtral","gpt-audio"];
+const PCOLOR = {sarvam:"#3EA0B2",whisper:"#8670AA",gemini:"#E89A48",voxtral:"#C96F79","gpt-audio":"#619C4E"};
+const PLABEL = {sarvam:"Sarvam (saarika)",whisper:"OpenAI Whisper",gemini:"Gemini 3.5 Flash",voxtral:"Mistral Voxtral","gpt-audio":"OpenAI gpt-audio"};
+const ink300="#B0A695", grid="rgba(236,228,212,.07)";
+Chart.defaults.color=ink300;Chart.defaults.font.family="'Plus Jakarta Sans',sans-serif";Chart.defaults.font.size=11.5;
+Chart.defaults.borderColor=grid;
+
+const g=(o,k)=>o[k]||null;
+const pct=v=>v==null?"–":(v*100).toFixed(1)+"%";
+
+// ---- stat strip
+(function(){
+  const bp=DATA.by_provider; let langs=new Set(), pubSamples=0, hoSamples=0, mins=0;
+  Object.entries(DATA.by_provider_language).forEach(([k,v])=>langs.add(k.split("|")[1]));
+  P.forEach(p=>{const a=g(bp,p+"|public"),b=g(bp,p+"|heldout");
+    if(a){pubSamples=Math.max(pubSamples,a.samples);mins=Math.max(mins,a.audio_minutes)}
+    if(b)hoSamples=Math.max(hoSamples,b.samples);});
+  const el=document.getElementById("statstrip");
+  [[pubSamples.toLocaleString(),"public samples scored"],[hoSamples.toLocaleString(),"fresh held-out chunks"],
+   [langs.size,"languages"],[P.filter(p=>g(bp,p+"|public")||g(bp,p+"|heldout")).length,"providers"],
+   [Math.round(mins).toLocaleString()+" min","audio per provider"]].forEach(([b,s])=>{
+    const d=document.createElement("div");d.innerHTML=`<b>${b}</b><span>${s}</span>`;el.appendChild(d);});
+})();
+
+// ---- leaderboard
+function renderBoard(split){
+  const tb=document.querySelector("#board tbody");tb.innerHTML="";
+  const rows=P.map(p=>({p,d:g(DATA.by_provider,p+"|"+split)})).filter(r=>r.d&&r.d.samples>0);
+  rows.sort((a,b)=>a.d.wer_script_agnostic-b.d.wer_script_agnostic);
+  rows.forEach((r,i)=>{
+    const c=r.d, tr=document.createElement("tr"); if(i===0)tr.className="best";
+    const silver = split==="heldout" && DATA.silver_caveat_providers.includes(r.p)
+      ? '<span class="badge" title="contributed to silver references; score is an upper bound">silver*</span>':"";
+    tr.innerHTML=`<td class="prov"><span class="dot" style="background:${PCOLOR[r.p]}"></span>${PLABEL[r.p]}${silver}</td>
+      <td>${c.samples.toLocaleString()}</td><td>${pct(c.wer)}</td><td><b style="color:var(--sand)">${pct(c.wer_script_agnostic)}</b></td>
+      <td>${pct(c.cer)}</td><td>${c.latency_median_s==null?"–":c.latency_median_s.toFixed(2)+" s"}</td>
+      <td>${c.rtf_median==null?"–":c.rtf_median.toFixed(2)+"×"}</td>
+      <td>${c.cost_usd_per_hour==null?"–":"$"+c.cost_usd_per_hour.toFixed(2)}</td>`;
+    tb.appendChild(tr);});
+}
+document.querySelectorAll("#splitToggle button").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("#splitToggle button").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on");renderBoard(b.dataset.split);}));
+renderBoard("public");
+
+// ---- dataset chart
+(function(){
+  const ds=[...new Set(Object.keys(DATA.by_provider_dataset).map(k=>k.split("|")[1]))].sort();
+  const sets=P.map(p=>({label:PLABEL[p],backgroundColor:PCOLOR[p],borderRadius:3,
+    data:ds.map(d=>{const v=g(DATA.by_provider_dataset,p+"|"+d);return v?v.wer_script_agnostic*100:null;})}))
+    .filter(s=>s.data.some(v=>v!=null));
+  new Chart(cDataset,{type:"bar",data:{labels:ds,datasets:sets},
+    options:{maintainAspectRatio:false,scales:{y:{title:{display:true,text:"script-agnostic WER %"},grid:{color:grid}},x:{grid:{display:false}}},
+    plugins:{legend:{labels:{boxWidth:10,boxHeight:10}}}}});
+})();
+
+// ---- language chart
+(function(){
+  const langs=[...new Set(Object.keys(DATA.by_provider_language).map(k=>k.split("|")[1]))].sort();
+  const sets=P.map(p=>({label:PLABEL[p],backgroundColor:PCOLOR[p],borderRadius:3,
+    data:langs.map(l=>{const v=g(DATA.by_provider_language,p+"|"+l);return v?v.wer_script_agnostic*100:null;})}))
+    .filter(s=>s.data.some(v=>v!=null));
+  new Chart(cLang,{type:"bar",data:{labels:langs,datasets:sets},
+    options:{maintainAspectRatio:false,scales:{y:{title:{display:true,text:"script-agnostic WER %"},grid:{color:grid}},x:{grid:{display:false}}},
+    plugins:{legend:{labels:{boxWidth:10,boxHeight:10}}}}});
+})();
+
+// ---- scatter accuracy vs latency
+(function(){
+  const pts=P.map(p=>{const v=g(DATA.by_provider,p+"|public");if(!v||!v.latency_median_s)return null;
+    return {label:PLABEL[p],backgroundColor:PCOLOR[p]+"CC",borderColor:PCOLOR[p],
+      data:[{x:v.latency_median_s,y:v.wer_script_agnostic*100,r:Math.max(6,Math.sqrt((v.cost_usd_per_hour||0.2))*9)}]};}).filter(Boolean);
+  new Chart(cScatter,{type:"bubble",data:{datasets:pts},
+    options:{maintainAspectRatio:false,
+      scales:{x:{title:{display:true,text:"median latency (s / clip)"},grid:{color:grid}},y:{title:{display:true,text:"WER % (public)"},grid:{color:grid}}},
+      plugins:{legend:{labels:{boxWidth:10,boxHeight:10}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.raw.y.toFixed(1)}% WER, ${c.raw.x.toFixed(2)}s`}}}}});
+})();
+
+// ---- cost + rtf
+(function(){
+  const provs=P.filter(p=>g(DATA.by_provider,p+"|public"));
+  new Chart(cCost,{type:"bar",data:{labels:provs.map(p=>PLABEL[p]),datasets:[
+    {label:"$ per audio hour",data:provs.map(p=>g(DATA.by_provider,p+"|public").cost_usd_per_hour),backgroundColor:provs.map(p=>PCOLOR[p]),borderRadius:3,yAxisID:"y"},
+    {label:"real-time factor (median)",data:provs.map(p=>g(DATA.by_provider,p+"|public").rtf_median),type:"line",borderColor:"#ECE4D4",pointBackgroundColor:"#ECE4D4",borderWidth:1.5,borderDash:[5,4],yAxisID:"y2"}]},
+    options:{maintainAspectRatio:false,scales:{y:{title:{display:true,text:"$ / hr"},grid:{color:grid}},y2:{position:"right",title:{display:true,text:"RTF"},grid:{display:false}},x:{grid:{display:false},ticks:{maxRotation:30}}},
+    plugins:{legend:{labels:{boxWidth:10,boxHeight:10}}}}});
+})();
+
+// ---- side by side
+(function(){
+  const root=document.getElementById("cases");
+  CASES.forEach(c=>{
+    const div=document.createElement("div");div.className="case";
+    let rows=`<div class="row ref"><div class="who">reference</div><div class="txt">${c.reference}</div><div class="wer"></div></div>`;
+    P.forEach(p=>{const h=c.hypotheses[p];if(!h)return;
+      rows+=`<div class="row"><div class="who"><span class="dot" style="background:${PCOLOR[p]}"></span>${PLABEL[p]}</div>
+        <div class="txt">${h.text}</div><div class="wer">${h.wer_sa==null?"":pct(h.wer_sa)}</div></div>`;});
+    div.innerHTML=`<div class="meta"><b>${c.sample_id}</b><span>${c.dataset} · ${c.language}${c.dataset==="heldout_yt"?" · silver reference":""}</span><span style="margin-left:auto">script-agnostic WER →</span></div>${rows}`;
+    root.appendChild(div);});
+})();
+
+document.getElementById("modelnote").textContent =
+  "sarvam saarika:v2.5 · openai whisper-1 · google/gemini-3.5-flash via OpenRouter, reasoning disabled · mistralai/voxtral-small-24b-2507 · openai/gpt-audio. Costs are measured from per-call billing (OpenRouter) or list price (Sarvam ₹0.75/min, Whisper $0.006/min).";
+</script>
+</body>
+</html>

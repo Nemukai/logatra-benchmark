@@ -72,13 +72,26 @@ class OpenRouterAudioAdapter:
         if language:
             prompt += f"\n- Language hint: {language}."
 
+        # Reasoning models burn hidden thinking tokens on transcription
+        # (measured: 86% of Gemini 3.5 Flash cost was reasoning). Default is
+        # "off"; models that reject disabling (Gemini 3.5 mandates reasoning)
+        # need "minimal"/"low" via KOE_<PROVIDER>_REASONING or the global
+        # KOE_OPENROUTER_REASONING. "on" leaves the model default.
+        mode = (
+            os.environ.get(f"KOE_{self.name.upper().replace('-', '_')}_REASONING", "")
+            or os.environ.get("KOE_OPENROUTER_REASONING", "")
+            or "off"
+        ).lower()
+        if mode == "off":
+            reasoning: dict | None = {"enabled": False}
+        elif mode in ("minimal", "low", "medium", "high"):
+            reasoning = {"effort": mode}
+        else:  # "on"
+            reasoning = None
+
         body = {
             "model": self.model,
             "temperature": 0,
-            # Reasoning models burn hidden thinking tokens on transcription
-            # (measured: 86% of Gemini 3.5 Flash cost was reasoning). Off by
-            # default; set KOE_OPENROUTER_REASONING=on to re-enable.
-            "reasoning": {"enabled": os.environ.get("KOE_OPENROUTER_REASONING") == "on"},
             "max_tokens": 4096,
             "messages": [
                 {
@@ -93,6 +106,8 @@ class OpenRouterAudioAdapter:
                 }
             ],
         }
+        if reasoning is not None:
+            body["reasoning"] = reasoning
         try:
             resp = httpx.post(
                 API_URL,
