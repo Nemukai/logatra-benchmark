@@ -181,7 +181,13 @@ const pct=v=>v==null?"–":(v*100).toFixed(1)+"%";
 // ---- leaderboard
 function renderBoard(split){
   const tb=document.querySelector("#board tbody");tb.innerHTML="";
-  const rows=P.map(p=>({p,d:g(DATA.by_provider,p+"|"+split)})).filter(r=>r.d&&r.d.samples>0);
+  const src=DATA.by_provider_comparable&&Object.keys(DATA.by_provider_comparable).length?DATA.by_provider_comparable:DATA.by_provider;
+  const note=document.querySelector("#leaderboard .sub");
+  if(DATA.comparable_counts&&DATA.comparable_counts[split])
+    note.dataset.extra=`Computed on the ${DATA.comparable_counts[split].toLocaleString()} ${split} samples completed by every provider, so rows are directly comparable.`;
+  const extra=document.getElementById("compnote")||(()=>{const e=document.createElement("p");e.id="compnote";e.className="sub";note.after(e);return e;})();
+  extra.textContent=note.dataset.extra||"";
+  const rows=P.map(p=>({p,d:g(src,p+"|"+split)})).filter(r=>r.d&&r.d.samples>0);
   rows.sort((a,b)=>a.d.wer_script_agnostic-b.d.wer_script_agnostic);
   rows.forEach((r,i)=>{
     const c=r.d, tr=document.createElement("tr"); if(i===0)tr.className="best";

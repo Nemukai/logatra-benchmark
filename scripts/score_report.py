@@ -142,8 +142,26 @@ def main() -> int:
             }
         return out
 
+    # Comparable subset: per split, only samples that EVERY present provider
+    # completed, so the headline table never compares apples to oranges.
+    present = sorted({r["provider"] for r in rows})
+    comparable_ids: dict[str, set] = {}
+    for split in ("public", "heldout"):
+        per_prov = [
+            {r["sample_id"] for r in rows if r["provider"] == p and r["split"] == split}
+            for p in present
+        ]
+        per_prov = [s for s in per_prov if s]
+        comparable_ids[split] = set.intersection(*per_prov) if len(per_prov) == len(present) else set()
+    rows_all = rows
+    rows = [r for r in rows_all if r["sample_id"] in comparable_ids[r["split"]]]
+    by_provider_comparable = aggregate(lambda r: (r["provider"], r["split"]))
+    rows = rows_all
+
     report = {
         "by_provider": aggregate(lambda r: (r["provider"], r["split"])),
+        "by_provider_comparable": by_provider_comparable,
+        "comparable_counts": {k: len(v) for k, v in comparable_ids.items()},
         "by_provider_dataset": aggregate(lambda r: (r["provider"], r["dataset"])),
         "by_provider_language": aggregate(lambda r: (r["provider"], r["language"])),
         "silver_caveat_providers": sorted(SILVER_CONTRIBUTORS),

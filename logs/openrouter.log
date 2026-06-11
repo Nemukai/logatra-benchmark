@@ -66,3 +66,122 @@
 [voxtral] +24 samples, batch $0.025, total $0.685 / $5.00
 [voxtral] +24 samples, batch $0.025, total $0.710 / $5.00
 [voxtral] +24 samples, batch $0.021, total $0.731 / $5.00
+[voxtral] m1_public.jsonl: 180 uncached
+[voxtral] +24 samples, batch $0.013, total $0.013 / $0.55
+[voxtral] +24 samples, batch $0.019, total $0.032 / $0.55
+[voxtral] +24 samples, batch $0.015, total $0.047 / $0.55
+[voxtral] +24 samples, batch $0.021, total $0.068 / $0.55
+[voxtral] +24 samples, batch $0.024, total $0.092 / $0.55
+[voxtral] +24 samples, batch $0.023, total $0.116 / $0.55
+[voxtral] +24 samples, batch $0.022, total $0.137 / $0.55
+[voxtral] +12 samples, batch $0.011, total $0.148 / $0.55
+[voxtral] heldout_yt.jsonl: 132 uncached
+[voxtral] +24 samples, batch $0.052, total $0.201 / $0.55
+[voxtral] +24 samples, batch $0.054, total $0.255 / $0.55
+[voxtral] +24 samples, batch $0.053, total $0.308 / $0.55
+[voxtral] +24 samples, batch $0.050, total $0.359 / $0.55
+[voxtral] +24 samples, batch $0.053, total $0.412 / $0.55
+[voxtral] +12 samples, batch $0.028, total $0.439 / $0.55
+{
+  "spent_usd": 0.439,
+  "budget_usd": 0.55,
+  "stopped_early": false,
+  "completed": {
+    "voxtral": 312
+  },
+  "errors": {
+    "voxtral": 0
+  }
+}
+STAGE voxtral DONE
+[gemini] m1_public.jsonl: 800 uncached
+[gemini] +24 samples, batch $0.035, total $0.035 / $1.95
+[gemini] +24 samples, batch $0.040, total $0.075 / $1.95
+[gemini] +24 samples, batch $0.037, total $0.112 / $1.95
+[gemini] +24 samples, batch $0.036, total $0.148 / $1.95
+[gemini] +24 samples, batch $0.036, total $0.184 / $1.95
+[gemini] +24 samples, batch $0.032, total $0.216 / $1.95
+[gemini] +24 samples, batch $0.030, total $0.247 / $1.95
+[gemini] +24 samples, batch $0.035, total $0.282 / $1.95
+[gemini] +24 samples, batch $0.036, total $0.317 / $1.95
+[gemini] +24 samples, batch $0.038, total $0.355 / $1.95
+[gemini] +24 samples, batch $0.046, total $0.402 / $1.95
+[gemini] +24 samples, batch $0.041, total $0.442 / $1.95
+[gemini] +24 samples, batch $0.040, total $0.482 / $1.95
+[gemini] +24 samples, batch $0.040, total $0.522 / $1.95
+[gemini] +24 samples, batch $0.041, total $0.563 / $1.95
+[gemini] +24 samples, batch $0.043, total $0.606 / $1.95
+[gemini] +24 samples, batch $0.045, total $0.651 / $1.95
+[gemini] +24 samples, batch $0.038, total $0.689 / $1.95
+[gemini] +24 samples, batch $0.041, total $0.730 / $1.95
+[gemini] +24 samples, batch $0.034, total $0.764 / $1.95
+[gemini] +24 samples, batch $0.039, total $0.803 / $1.95
+[gemini] +24 samples, batch $0.033, total $0.836 / $1.95
+[gemini] +24 samples, batch $0.032, total $0.867 / $1.95
+[gemini] +24 samples, batch $0.032, total $0.899 / $1.95
+[gemini] +24 samples, batch $0.029, total $0.928 / $1.95
+[gemini] +24 samples, batch $0.017, total $0.946 / $1.95
+[gemini] +24 samples, batch $0.016, total $0.961 / $1.95
+[gemini] +24 samples, batch $0.021, total $0.982 / $1.95
+[gemini] +24 samples, batch $0.017, total $1.000 / $1.95
+[gemini] +24 samples, batch $0.029, total $1.028 / $1.95
+[gemini] +24 samples, batch $0.027, total $1.055 / $1.95
+[gemini] +24 samples, batch $0.029, total $1.085 / $1.95
+[gemini] +24 samples, batch $0.029, total $1.114 / $1.95
+[gemini] +8 samples, batch $0.010, total $1.124 / $1.95
+[gemini] heldout_yt.jsonl: 132 uncached
+[gemini] +24 samples, batch $0.061, total $1.185 / $1.95
+[gemini] +24 samples, batch $0.061, total $1.246 / $1.95
+[gemini] +24 samples, batch $0.065, total $1.311 / $1.95
+[gemini] +24 samples, batch $0.061, total $1.372 / $1.95
+[gemini] +24 samples, batch $0.064, total $1.437 / $1.95
+[gemini] +12 samples, batch $0.034, total $1.471 / $1.95
+{
+  "spent_usd": 1.471,
+  "budget_usd": 1.95,
+  "stopped_early": false,
+  "completed": {
+    "gemini": 931
+  },
+  "errors": {
+    "gemini": 1
+  }
+}
+STAGE gemini DONE
+gpt-audio budget: $2.346 (total OR cache spend so far: $2.65365294)
+[gpt-audio] heldout_yt.jsonl: 132 uncached
+[gpt-audio] +24 samples, batch $0.194, total $0.194 / $2.35
+[gpt-audio] +24 samples, batch $0.198, total $0.391 / $2.35
+[gpt-audio] +24 samples, batch $0.202, total $0.594 / $2.35
+[gpt-audio] +24 samples, batch $0.191, total $0.784 / $2.35
+[gpt-audio] +24 samples, batch $0.199, total $0.983 / $2.35
+[gpt-audio] +12 samples, batch $0.107, total $1.090 / $2.35
+[gpt-audio] m1_public_interleaved.jsonl: 800 uncached
+[gpt-audio] +24 samples, batch $0.087, total $1.177 / $2.35
+[gpt-audio] +24 samples, batch $0.091, total $1.269 / $2.35
+[gpt-audio] +24 samples, batch $0.079, total $1.348 / $2.35
+[gpt-audio] +24 samples, batch $0.085, total $1.433 / $2.35
+[gpt-audio] +24 samples, batch $0.082, total $1.515 / $2.35
+[gpt-audio] +24 samples, batch $0.093, total $1.608 / $2.35
+[gpt-audio] +24 samples, batch $0.095, total $1.703 / $2.35
+[gpt-audio] +24 samples, batch $0.095, total $1.798 / $2.35
+[gpt-audio] +24 samples, batch $0.092, total $1.890 / $2.35
+[gpt-audio] +24 samples, batch $0.093, total $1.983 / $2.35
+[gpt-audio] +24 samples, batch $0.089, total $2.073 / $2.35
+[gpt-audio] +24 samples, batch $0.090, total $2.163 / $2.35
+[gpt-audio] +24 samples, batch $0.108, total $2.271 / $2.35
+[gpt-audio] +24 samples, batch $0.094, total $2.364 / $2.35
+BUDGET REACHED at $2.364; stopping.
+{
+  "spent_usd": 2.364,
+  "budget_usd": 2.346,
+  "stopped_early": true,
+  "completed": {
+    "gpt-audio": 468
+  },
+  "errors": {
+    "gpt-audio": 0
+  }
+}
+STAGE gpt-audio DONE
+OPENROUTER ALL DONE total spend: $5.01797694
