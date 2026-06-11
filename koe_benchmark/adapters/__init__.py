@@ -39,13 +39,35 @@ def get_adapter(name: str) -> STTAdapter:
         from .assemblyai import AssemblyAIAdapter
 
         return AssemblyAIAdapter()
+    if key in _OPENROUTER_AUDIO:
+        from .openrouter_audio import OpenRouterAudioAdapter
+
+        default_model, model_env = _OPENROUTER_AUDIO[key]
+        return OpenRouterAudioAdapter(key, default_model, model_env)
     raise ValueError(
-        f"unknown provider {name!r}; known: sarvam, whisper, deepgram, google, "
-        "elevenlabs, assemblyai"
+        f"unknown provider {name!r}; known: {', '.join(PROVIDERS)}"
     )
 
 
-PROVIDERS = ("sarvam", "whisper", "deepgram", "google", "elevenlabs", "assemblyai")
+# OpenRouter audio-capable chat models used as STT engines:
+# provider name -> (default model id, env var for override)
+_OPENROUTER_AUDIO = {
+    "gemini": ("google/gemini-3.5-flash", "KOE_GEMINI_MODEL"),
+    "voxtral": ("mistralai/voxtral-small-24b-2507", "KOE_VOXTRAL_MODEL"),
+    "gpt-audio": ("openai/gpt-audio", "KOE_GPT_AUDIO_MODEL"),
+}
+
+PROVIDERS = (
+    "sarvam",
+    "whisper",
+    "gemini",
+    "voxtral",
+    "gpt-audio",
+    "deepgram",
+    "google",
+    "elevenlabs",
+    "assemblyai",
+)
 
 __all__ = [
     "STTAdapter",

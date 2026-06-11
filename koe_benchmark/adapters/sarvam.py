@@ -47,7 +47,11 @@ class SarvamAdapter:
         self.timeout = timeout
 
     def transcribe(self, audio_path: Path, language: str | None = None) -> Transcription:
-        api_key = require_env("SARVAM_API_KEY", "Sarvam")
+        # Accept both the benchmark's name and Koe's production env var name,
+        # so `source Koe/.env.local` works without re-exporting.
+        api_key = os.environ.get("SARVAM_API_KEY", "").strip() or require_env(
+            "SARVAM_API_SUBSCRIPTION_KEY", "Sarvam"
+        )
         model = os.environ.get("KOE_SARVAM_MODEL", "saarika:v2.5")
         language_code = LANGUAGE_MAP.get(language or "", "unknown")
 

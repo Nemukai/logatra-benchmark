@@ -43,6 +43,37 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="emit the aggregate report as JSON instead of a table",
     )
+
+    silver = sub.add_parser(
+        "silver",
+        help="generate silver references for untranscribed audio via "
+        "multi-model consensus",
+    )
+    silver.add_argument("--manifest", required=True, help="path to JSONL manifest")
+    silver.add_argument(
+        "--providers",
+        default="sarvam,gemini,whisper",
+        help="comma-separated providers to form the consensus "
+        "(default: sarvam,gemini,whisper)",
+    )
+    silver.add_argument(
+        "--results-dir",
+        default="results",
+        help="shared response cache directory (default: results/)",
+    )
+    silver.add_argument(
+        "--threshold",
+        type=float,
+        default=0.20,
+        help="max mean pairwise WER for a consensus to count as silver "
+        "(default: 0.20)",
+    )
+    silver.add_argument(
+        "--min-hypotheses",
+        type=int,
+        default=2,
+        help="minimum usable hypotheses required per sample (default: 2)",
+    )
     return parser
 
 
@@ -61,6 +92,19 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps(report, indent=2))
         else:
             print(render_table(report))
+        return 0
+    if args.command == "silver":
+        from .silver import generate_silver
+
+        providers = [p.strip() for p in args.providers.split(",") if p.strip()]
+        summary = generate_silver(
+            manifest_path=Path(args.manifest),
+            providers=providers,
+            results_dir=Path(args.results_dir),
+            threshold=args.threshold,
+            min_hypotheses=args.min_hypotheses,
+        )
+        print(json.dumps(summary, indent=2, ensure_ascii=False))
         return 0
     return 1
 
