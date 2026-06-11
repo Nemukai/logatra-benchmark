@@ -1,0 +1,33 @@
+[project]
+name = "koe-benchmark"
+version = "0.1.0"
+description = "Indic speech-to-text benchmark: WER/CER/DER across STT providers on Indian languages, Hinglish code-mixing, and diarization."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+dependencies = [
+    "httpx>=0.27",
+    "jiwer>=3.0",
+    "rich>=13.0",
+]
+
+[project.optional-dependencies]
+diarization = [
+    "pyannote.metrics>=3.2",
+]
+collect = [
+    "yt-dlp>=2024.4.9",
+]
+dev = [
+    "pytest>=8.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["koe_benchmark"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

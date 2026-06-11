@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+dist/
+*.egg-info/
+
+# benchmark artifacts
+results/
+data/
+!data/manifests/
