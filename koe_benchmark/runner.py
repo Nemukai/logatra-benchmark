@@ -19,6 +19,27 @@ from .manifest import Sample, load_manifest
 from .metrics import score_asr
 
 
+# Transient HTTP statuses worth retrying with exponential backoff.
+_RETRYABLE = ("429", "500", "502", "503", "504")
+_BACKOFF_S = (2.0, 8.0, 20.0)
+
+
+def _transcribe_with_backoff(adapter, audio: Path, language: str | None) -> Transcription:
+    """Retry transient provider failures (rate limits, 5xx) with backoff."""
+    last: TranscriptionError | None = None
+    for attempt, delay in enumerate((0.0, *_BACKOFF_S)):
+        if delay:
+            time.sleep(delay)
+        try:
+            return adapter.transcribe(audio, language=language)
+        except TranscriptionError as exc:
+            msg = str(exc)
+            if not any(f"HTTP {code}" in msg for code in _RETRYABLE):
+                raise
+            last = exc
+    raise last  # type: ignore[misc]
+
+
 def _cache_path(results_dir: Path, provider: str, sample_id: str) -> Path:
     # Sample ids are file-system friendly by convention; guard the worst cases.
     safe_id = sample_id.replace("/", "_").replace("\\", "_")
@@ -59,7 +80,7 @@ def transcribe_sample(
     audio = sample.resolve_audio_path(manifest_dir)
     started = time.monotonic()
     try:
-        result: Transcription = adapter.transcribe(audio, language=sample.language)
+        result: Transcription = _transcribe_with_backoff(adapter, audio, sample.language)
     except NotConfigured:
         raise  # caller decides how to report unconfigured providers
     except (TranscriptionError, NotImplementedError, FileNotFoundError) as exc:

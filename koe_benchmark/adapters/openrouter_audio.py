@@ -75,6 +75,11 @@ class OpenRouterAudioAdapter:
         body = {
             "model": self.model,
             "temperature": 0,
+            # Reasoning models burn hidden thinking tokens on transcription
+            # (measured: 86% of Gemini 3.5 Flash cost was reasoning). Off by
+            # default; set KOE_OPENROUTER_REASONING=on to re-enable.
+            "reasoning": {"enabled": os.environ.get("KOE_OPENROUTER_REASONING") == "on"},
+            "max_tokens": 4096,
             "messages": [
                 {
                     "role": "user",
