@@ -7,5 +7,5 @@ dist/
 
 # benchmark artifacts
 results/
-data/
-!data/manifests/
+data/raw/
+data/audio/
