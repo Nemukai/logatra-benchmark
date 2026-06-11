@@ -38,3 +38,20 @@ def test_openrouter_audio_model_override(monkeypatch):
     assert adapter.model == "google/gemini-3.5-flash"
     monkeypatch.setenv("KOE_GEMINI_MODEL", "google/gemini-9-test")
     assert adapter.model == "google/gemini-9-test"
+
+
+def test_romanize_devanagari_english():
+    from koe_benchmark.metrics import romanize, script_agnostic_cer
+    # Same English content, one written in Devanagari, one in Latin.
+    a = "आई वांट टू स्टार्ट बाय आस्किंग यू"
+    b = "I want to start by asking you"
+    assert script_agnostic_cer(a, b) < 0.35
+    assert romanize("नमस्ते 123") == romanize("नमस्ते १२३")
+
+
+def test_consensus_distance_prefers_script_agnostic():
+    from koe_benchmark.silver import _consensus_distance, _symmetric_wer
+    a = "आई वांट टू स्टार्ट"
+    b = "I want to start"
+    assert _symmetric_wer(a, b) == 1.0
+    assert _consensus_distance(a, b) < 0.5

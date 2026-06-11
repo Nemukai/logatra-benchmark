@@ -80,6 +80,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=2,
         help="minimum usable hypotheses required per sample (default: 2)",
     )
+    silver.add_argument(
+        "--min-agree",
+        type=int,
+        default=2,
+        help="hypotheses that must agree with the medoid (default: 2)",
+    )
     return parser
 
 
@@ -110,6 +116,7 @@ def main(argv: list[str] | None = None) -> int:
             results_dir=Path(args.results_dir),
             threshold=args.threshold,
             min_hypotheses=args.min_hypotheses,
+            min_agree=args.min_agree,
         )
         print(json.dumps(summary, indent=2, ensure_ascii=False))
         return 0

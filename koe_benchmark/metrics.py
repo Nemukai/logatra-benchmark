@@ -80,6 +80,50 @@ class ASRScores:
     num_reference_words: int
 
 
+_DEVANAGARI_RE = re.compile(r"[ऀ-ॿ]+")
+
+
+def romanize(text: str) -> str:
+    """Script-agnostic projection: Devanagari runs -> Latin (IAST, diacritics
+    stripped), everything else passed through. Used for the script-agnostic
+    distance, never for the strict WER headline.
+
+    "आई वांट टू स्टार्ट" -> "ai vant tu start", so script choice stops counting
+    as an error while real content differences still do.
+    """
+    try:
+        from indic_transliteration import sanscript
+    except ImportError as exc:  # pragma: no cover
+        raise ImportError(
+            "script-agnostic comparison needs indic-transliteration; "
+            "run `uv sync`."
+        ) from exc
+
+    def _translit(m: re.Match) -> str:
+        latin = sanscript.transliterate(m.group(0), sanscript.DEVANAGARI, sanscript.IAST)
+        # Anusvara is closer to "n" than "m" for this purpose (asking/अस्किंग).
+        latin = latin.replace("ṁ", "n").replace("ṃ", "n")
+        # Strip diacritics: NFD then drop combining marks.
+        decomposed = unicodedata.normalize("NFD", latin)
+        latin = "".join(c for c in decomposed if not unicodedata.combining(c))
+        # Hindi schwa deletion: IAST keeps the inherent word-final "a"
+        # ("स्टार्ट" -> "starta") that Hindi doesn't pronounce; drop it.
+        return re.sub(r"(?<=[bcdfghjklmnpqrstvwxyz])a\b", "", latin)
+
+    return normalize_text(_DEVANAGARI_RE.sub(_translit, text))
+
+
+def script_agnostic_cer(a: str, b: str) -> float:
+    """Symmetric CER on romanized text; the consensus distance for code-mixed
+    speech where providers legitimately differ on output script."""
+    ra, rb = romanize(a), romanize(b)
+    if not ra and not rb:
+        return 0.0
+    if not ra or not rb:
+        return 1.0
+    return (jiwer.cer(ra, rb) + jiwer.cer(rb, ra)) / 2
+
+
 def score_asr(reference: str, hypothesis: str) -> ASRScores:
     """Compute WER and CER on normalized text.
 

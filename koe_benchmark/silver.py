@@ -29,7 +29,7 @@ from pathlib import Path
 
 from .adapters import NotConfigured
 from .manifest import Sample, load_manifest, write_manifest
-from .metrics import normalize_text, score_asr
+from .metrics import normalize_text, score_asr, script_agnostic_cer
 from .runner import transcribe_sample
 
 
@@ -52,12 +52,24 @@ def _symmetric_wer(a: str, b: str) -> float:
     return (score_asr(na, nb).wer + score_asr(nb, na).wer) / 2
 
 
+def _consensus_distance(a: str, b: str) -> float:
+    """min(strict symmetric WER, script-agnostic CER).
+
+    Two hypotheses that say the same thing in different scripts (Sarvam's
+    Devanagari rendering of English speech vs Gemini's Latin) get a small
+    distance via the romanized-CER path; genuinely different content stays
+    far apart on both measures.
+    """
+    return min(_symmetric_wer(a, b), script_agnostic_cer(a, b))
+
+
 def generate_silver(
     manifest_path: str | Path,
     providers: list[str],
     results_dir: str | Path = "results",
     threshold: float = 0.20,
     min_hypotheses: int = 2,
+    min_agree: int = 2,
     only_empty: bool = True,
 ) -> dict:
     """Generate silver references for a manifest.
@@ -112,17 +124,25 @@ def generate_silver(
             out_samples.append(sample)
             continue
 
-        # Medoid: hypothesis with the lowest mean symmetric WER to the others.
+        # Medoid: hypothesis with the lowest mean consensus distance to the
+        # others. Acceptance is cluster-based: enough hypotheses must sit
+        # within the threshold of the medoid, so one hallucinating model
+        # cannot veto agreement between the rest.
         names = list(hypotheses)
-        mean_dist: dict[str, float] = {}
-        for p in names:
-            others = [q for q in names if q != p]
-            mean_dist[p] = sum(
-                _symmetric_wer(hypotheses[p], hypotheses[q]) for q in others
-            ) / len(others)
+        dist: dict[tuple[str, str], float] = {}
+        for i, p in enumerate(names):
+            for q in names[i + 1 :]:
+                d = _consensus_distance(hypotheses[p], hypotheses[q])
+                dist[(p, q)] = dist[(q, p)] = d
+        mean_dist: dict[str, float] = {
+            p: sum(dist[(p, q)] for q in names if q != p) / (len(names) - 1)
+            for p in names
+        }
         chosen = min(mean_dist, key=mean_dist.get)  # type: ignore[arg-type]
+        cluster = [p for p in names if p == chosen or dist[(chosen, p)] <= threshold]
+        need = min(min_agree, len(names))
 
-        if mean_dist[chosen] <= threshold:
+        if len(cluster) >= need:
             summary["silver"] += 1
             out_samples.append(
                 Sample(
@@ -133,7 +153,11 @@ def generate_silver(
                     code_mixed=sample.code_mixed,
                     num_speakers=sample.num_speakers,
                     speaker_segments=sample.speaker_segments,
-                    source=f"{sample.source}:silver({chosen},d={mean_dist[chosen]:.3f})",
+                    source=(
+                        f"{sample.source}:silver({chosen},"
+                        f"agree={len(cluster)}/{len(names)},"
+                        f"d={mean_dist[chosen]:.3f})"
+                    ),
                     license=sample.license,
                     split=sample.split,
                 )
@@ -147,6 +171,7 @@ def generate_silver(
                     "status": "review",
                     "mean_distance": round(mean_dist[chosen], 4),
                     "best_provider": chosen,
+                    "agree_count": len(cluster),
                     "hypotheses": hypotheses,
                     "pairwise_mean_distances": {
                         p: round(d, 4) for p, d in mean_dist.items()
