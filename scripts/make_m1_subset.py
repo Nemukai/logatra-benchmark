@@ -48,11 +48,11 @@ def main() -> int:
         picked = sorted(samples, key=lambda s: stable_key(s.id))[: args.per_source]
         for s in picked:
             audio_abs = s.resolve_audio_path(mpath.parent).resolve()
-            try:
-                rel = audio_abs.relative_to(out_path.parent.resolve())
-                s.audio_path = str(rel)
-            except ValueError:
-                s.audio_path = str(audio_abs)
+            # walk_up keeps the manifest portable (../audio/...) instead of
+            # baking in an absolute path that breaks on any other machine.
+            s.audio_path = str(
+                audio_abs.relative_to(out_path.parent.resolve(), walk_up=True)
+            )
             merged.append(s)
         print(f"{mpath.name}: picked {len(picked)} of {len(samples)}", file=sys.stderr)
 
