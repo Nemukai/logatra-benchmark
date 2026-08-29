@@ -1,20 +1,25 @@
-# Benchmark status — PAUSED (11 Jun 2026, by Priyansh)
+# Benchmark status (30 Aug 2026)
 
-All API runs stopped mid-M1 on cost review. Nothing bills until explicitly resumed.
+Scoring is complete and reproducible offline from the committed results
+cache. Nothing bills unless a fresh `run` is started explicitly.
 
-## Spent so far (benchmark-attributable)
-- OpenRouter (Gemini 3.5 Flash, thinking ON): $10.03 / 832 samples — root cause:
-  hidden reasoning tokens (86% of cost). Fixed: reasoning now OFF by default.
-- Whisper (OpenAI): ~$0.75 · Voxtral/gpt-audio probes: ~$0.01 · Sarvam: ~Rs 45
+## Done
+- Full public split (7,253 samples): sarvam (saarika:v2.5), sarvam-saaras
+  (saaras:v3), whisper (whisper-1).
+- M1 public subset (800): gemini, voxtral. Partial (336): gpt-audio.
+- Held-out split: all 132 rows referenced (96 silver consensus + 36
+  adjudicated; see data/manifests/heldout_yt.adjudications.json).
+- Report: report/index.html regenerates offline from cache.
 
-## Cached (paid once, reusable forever, in results/)
-- gemini 832, whisper ~582, sarvam ~275 transcriptions (heldout 132 + partial M1)
-- Held-out silver references: 96/132 accepted, 36 in review queue
+## Remaining paid work (estimates at current list prices)
+- Complete gemini + voxtral over the full public split: ~$2 + ~$2.
+- Complete gpt-audio over the full public split: ~$20 (or drop it from the
+  full-split table and keep it intersection-only).
+- Unrun adapters over the full split (~17.5 audio-hours): Deepgram ~$5,
+  ElevenLabs Scribe ~$7, AssemblyAI ~$3, Google ~$16. Verify current
+  pricing before running; use `--workers` conservatively on new providers.
 
-## To resume
-1. Decide key strategy: OpenRouter key is SHARED WITH KOE PROD ($14.49 credit left).
-2. `set -a; source ~/Developer/Koe/.env.local; set +a`
-3. `uv run python -m koe_benchmark run --manifest data/manifests/m1_public.jsonl \
-    --providers sarvam,whisper,gemini,voxtral --workers 8`  (sarvam: use --workers 3)
-4. Remaining cost to finish M1: ~$2 + ~Rs 105 (without gpt-audio; +$4.4 with it).
-   Full 7,253-row public split: ~$34 + Rs 630 (with fixes; do NOT run gemini thinking-on).
+## Next (unpaid)
+- Publish: public GitHub repo + Hugging Face dataset (audio + results
+  cache) + Space hosting report/.
+- Human spot-listen of a sample of held-out references (silver to gold).

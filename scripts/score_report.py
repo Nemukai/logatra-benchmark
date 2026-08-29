@@ -13,7 +13,7 @@ whisper) and are flagged: contributors' held-out scores are upper bounds.
 
 Usage:
     uv run python scripts/score_report.py --out report/data.json \
-        data/manifests/m1_public.jsonl data/manifests/heldout_yt.silver.jsonl
+        data/manifests/full_public.jsonl data/manifests/heldout_yt.silver.jsonl
 """
 
 from __future__ import annotations

@@ -1,107 +1,171 @@
 # Koe Benchmark
 
-An independent benchmark for speech-to-text (STT) on Indian languages. It compares
-commercial and open providers (Sarvam, OpenAI Whisper large-v3, Google, Deepgram,
-ElevenLabs Scribe, AssemblyAI) on three axes:
+An independent benchmark for speech-to-text on Indian languages and Hinglish,
+built to answer one practical question honestly: **which STT engine should you
+actually run for Indian speech, at what accuracy, and at what price?**
 
-1. **Indic language accuracy**: WER/CER across major Indian languages with an
-   Indic-aware text normalization pipeline.
-2. **Hinglish / code-mixing**: accuracy on code-switched speech, where script
-   choice (Devanagari vs Latin) makes naive WER misleading.
-3. **Speaker diarization**: DER on multi-speaker conversational audio.
+Six systems, scored on ~1,000 minutes of public Indic test audio and a
+fresh held-out split the models have almost certainly never seen:
+
+| System | Model | Coverage |
+|---|---|---|
+| `sarvam-saaras` | Sarvam saaras:v3 | full public split + held-out |
+| `sarvam` | Sarvam saarika:v2.5 | full public split + held-out |
+| `whisper` | OpenAI whisper-1 | full public split + held-out |
+| `gemini` | Gemini 3.5 Flash (via OpenRouter) | 800-sample public subset + held-out |
+| `voxtral` | Mistral Voxtral Small 24B (via OpenRouter) | 800-sample public subset + held-out |
+| `gpt-audio` | OpenAI gpt-audio (via OpenRouter) | 336-sample public subset + held-out |
+
+Because coverage is uneven, the headline table is computed on the
+**comparable intersection**: only samples every system completed
+(324 public, 132 held-out). Full-split numbers are reported alongside.
+Adapters for Deepgram, ElevenLabs, Google, and AssemblyAI exist but have not
+been run yet (see Roadmap).
+
+## Results (comparable intersection)
+
+Strict WER, word-weighted; `sa` = script-agnostic WER (fair to code-mix
+script choice); `med` = median per-sample WER (robust to repetition loops).
+
+| System | public WER | public med | held-out WER | held-out med | $/audio-hour |
+|---|---|---|---|---|---|
+| gemini | 0.265 | 0.233 | 0.222 * | 0.117 * | ~0.43 |
+| sarvam-saaras | 0.323 | 0.286 | 0.228 | 0.106 | ~0.54 |
+| sarvam | 0.373 | 0.318 | 0.197 * | 0.000 * | ~0.54 |
+| gpt-audio | 0.535 | 0.417 | 0.285 | 0.198 | ~1.39 |
+| whisper | 0.783 | 0.793 | 0.476 * | 0.390 * | 0.36 |
+| voxtral | 2.938 | 0.833 | 0.720 | 0.266 | ~0.36 |
+
+`*` = this system contributed to the held-out references (see below); treat
+its held-out score as an upper bound, not a clean measurement. The per-system
+`self_ref_rate` in `report/data.json` quantifies exactly how much
+(sarvam 58%, gemini 38%, whisper 5% of held-out rows use that system's own
+output as the reference).
+
+Two findings worth calling out:
+
+- **Voxtral falls into repetition loops** on Indic audio (46 of 896 outputs
+  are runaway repetitions), which is why its mean WER exceeds 100% while its
+  median is far lower. The explorer shows the raw cases.
+- **Whisper collapses on conversational Hindi**: usable on read speech
+  (FLEURS), close to unusable on real interview audio in the held-out split.
 
 ## Two-layer design
 
-Public Indic speech datasets (AI4Bharat corpora, FLEURS, Common Voice, etc.) are
-widely used to train the very models being evaluated, so scores on them are
-contamination-prone and flattering. Koe Benchmark therefore splits every manifest
-into two layers:
+Public Indic test sets (FLEURS, Gramvaani, MUCS) are widely used to train the
+very models being evaluated, so scores on them are contamination-prone and
+flattering. The benchmark therefore has two layers:
 
-- `split: public`. Samples drawn from established public test sets. Useful as a
-  comparable baseline against published numbers, but treated as a
-  **contaminated baseline**, not a headline result.
-- `split: heldout`. Fresh audio the providers have almost certainly never seen:
-  Creative Commons licensed YouTube audio collected after model release dates
-  (see `scripts/collect_youtube.py`) plus self-collected recordings, all
-  transcribed by humans. **Headline numbers come from this split only.**
+- `split: public` (7,253 samples): FLEURS test for 12 Indic languages
+  (as, bn, gu, hi, kn, ml, mr, or, pa, ta, te, ur), Gramvaani Hindi telephony,
+  and MUCS 2021 Hindi-English code-mixed speech. A comparable baseline against
+  published numbers, treated as a **contaminated baseline**, never the
+  headline.
+- `split: heldout` (132 samples, ~48 minutes): Hindi/Hinglish conversational
+  audio chunked from 11 Creative Commons (CC-BY) YouTube videos uploaded
+  January to June 2026, after every tested model's release. Interviews,
+  podcasts, and lecture-style speech, heavy on real code-mixing. Currently
+  **Hindi only**; see [ATTRIBUTION.md](ATTRIBUTION.md) for the sources.
 
-Reporting both splits per provider also gives a rough contamination signal: a
-large public-vs-heldout gap suggests the public sets leak into training data.
+### How held-out references were made (read this before citing them)
+
+There is no human gold transcription yet. References are **silver**:
+
+1. Three systems (saarika, gemini, whisper) transcribed every chunk; the
+   medoid hypothesis under a consensus distance (min of symmetric WER and
+   romanized CER, so script choice does not count as disagreement) became the
+   candidate reference. 96/132 rows cleared the automatic agreement threshold.
+2. The remaining 36 rows were adjudicated one by one: accept when at least
+   two systems agree on content, choose the medoid verbatim, override only
+   for demonstrable mishears (checkable against domain facts, the video's own
+   metadata, or third-system corroboration). Every decision and rationale is
+   logged in
+   [heldout_yt.adjudications.json](data/manifests/heldout_yt.adjudications.json).
+   Adjudication was performed by an LLM from the hypothesis texts, not from
+   audio.
+
+Consequences, stated plainly: held-out scores for contributor systems are
+upper bounds (a system cannot disagree with its own reference), the
+`self_ref_rate` column quantifies the exposure per system, and the cleanest
+held-out comparison is between non-contributors (sarvam-saaras, gpt-audio,
+voxtral). Independent human transcription of the held-out audio is the top
+roadmap item and would upgrade silver to gold.
+
+## Metrics
+
+- **Strict WER/CER** on Indic-aware normalized text: NFC, lowercase,
+  Indic digit mapping, Indic punctuation stripping (danda, Urdu marks).
+- **Script-agnostic WER**: Devanagari runs are transliterated to Latin
+  (IAST, diacritics stripped, schwa deletion) before comparison, so
+  "आई वांट टू स्टार्ट" vs "I want to start" is not an error. Reported as a
+  separate column, never silently replacing strict WER.
+- **Median per-sample WER**: robustness view; loops and hallucinations move
+  the mean, not the median.
+- **Latency, RTF, cost**: per-call latency from the runner, real-time factor,
+  and cost from provider-reported usage or published per-minute rates.
+
+## Reproducing
+
+Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/). Raw provider
+responses are cached as JSON under `results/<system>/<sample_id>.json`, so
+scoring and the full report rebuild **offline, without any API key**:
+
+```bash
+uv sync
+uv run python scripts/score_report.py --out report/data.json \
+    data/manifests/full_public.jsonl data/manifests/heldout_yt.silver.jsonl
+uv run python scripts/export_explorer.py
+uv run python scripts/build_report.py     # writes report/index.html
+uv run pytest                             # normalization + silver tests
+```
+
+To run systems fresh (needs keys, spends money):
+
+```bash
+uv run python -m koe_benchmark run \
+    --manifest data/manifests/m1_public.jsonl \
+    --providers sarvam-saaras,whisper --workers 8
+```
+
+Keys via env: `SARVAM_API_KEY`, `OPENAI_API_KEY`, `OPENROUTER_API_KEY`
+(gemini/voxtral/gpt-audio), plus `DEEPGRAM_API_KEY`, `ELEVENLABS_API_KEY`,
+`ASSEMBLYAI_API_KEY`, `GOOGLE_APPLICATION_CREDENTIALS` for the unrun adapters.
+
+The audio itself (7.5 GB) and the results cache are distributed separately
+(Hugging Face dataset, in progress); the repo carries manifests, code, and the
+generated report.
 
 ## Layout
 
 ```
-koe_benchmark/
-  manifest.py       # JSONL manifest format + loader
-  metrics.py        # WER/CER (jiwer) with Indic normalization; optional DER
-  runner.py         # runs providers over a manifest, caches raw responses
-  adapters/         # one adapter per STT provider (Sarvam + OpenAI implemented)
-scripts/
-  collect_youtube.py  # CC-licensed YouTube audio collector (heldout split)
-tests/              # pure-python tests for the normalization pipeline
-results/            # cached raw provider responses + score artifacts
+koe_benchmark/        harness: manifest, metrics, runner, silver consensus, adapters/
+data/manifests/       JSONL manifests (public + held-out), adjudication log
+scripts/              dataset prep, collection, scoring, report build
+report/               generated leaderboard + per-case diff explorer (static HTML)
+tests/                pure-python tests for normalization and silver consensus
 ```
 
-## Setup
+## Disclosure
 
-Requires Python 3.12+ and [uv](https://docs.astral.sh/uv/).
+This benchmark is built by [Nemukai](https://nemukai.com). Our product Koe
+runs Sarvam saaras:v3 in production; the benchmark exists because we needed to
+choose a provider and did not trust vendor-reported numbers. That is a
+conflict of interest you should know about. Mitigations: every raw provider
+response is cached and shipped, scoring is reproducible offline, the
+methodology penalizes nobody by hand, and the reference pipeline's bias
+exposure is quantified per system (`self_ref_rate`).
 
-```bash
-uv sync                          # core deps (jiwer, httpx, rich)
-uv sync --extra diarization      # + pyannote.metrics for DER
-uv sync --extra collect          # + yt-dlp for the YouTube collector
-```
+## Roadmap
 
-Provider API keys are read from environment variables:
+- Independent human transcription of the held-out split (silver to gold).
+- Complete the public split for gemini, voxtral, gpt-audio.
+- Run the written-but-unrun adapters: Deepgram, ElevenLabs Scribe, Google,
+  AssemblyAI.
+- Multi-language held-out audio beyond Hindi.
+- Speaker diarization (DER): metric implemented, no diarization runs yet.
 
-| Provider   | Env var              |
-|------------|----------------------|
-| Sarvam     | `SARVAM_API_KEY`     |
-| OpenAI     | `OPENAI_API_KEY`     |
-| Deepgram   | `DEEPGRAM_API_KEY`   |
-| Google     | `GOOGLE_APPLICATION_CREDENTIALS` (service account JSON path) |
-| ElevenLabs | `ELEVENLABS_API_KEY` |
-| AssemblyAI | `ASSEMBLYAI_API_KEY` |
+## License
 
-## Running
-
-```bash
-# Run two providers over a manifest, cache raw responses under results/
-uv run python -m koe_benchmark run \
-    --manifest data/manifests/hindi-v1.jsonl \
-    --providers sarvam,whisper
-
-# Re-score from cache without hitting any API
-uv run python -m koe_benchmark run --manifest ... --providers sarvam --score-only
-```
-
-Raw provider responses are cached as JSON in `results/<provider>/<sample_id>.json`,
-so reruns are idempotent and scoring is reproducible offline.
-
-## Manifest format
-
-One JSON object per line (JSONL):
-
-```json
-{
-  "id": "hi-heldout-0042",
-  "audio_path": "audio/hi/0042.wav",
-  "reference_text": "...",
-  "language": "hi",
-  "code_mixed": false,
-  "num_speakers": 1,
-  "speaker_segments": null,
-  "source": "youtube:VIDEO_ID",
-  "license": "CC-BY-3.0",
-  "split": "heldout"
-}
-```
-
-`speaker_segments` is an optional RTTM-style list of
-`{"speaker": "spk0", "start": 0.0, "end": 4.2}` used for DER.
-
-## Tests
-
-```bash
-uv run pytest
-```
+Code is MIT ([LICENSE](LICENSE)). Held-out audio derives from CC-BY YouTube
+videos; per-video attribution in [ATTRIBUTION.md](ATTRIBUTION.md). Public
+split audio follows the licenses of FLEURS, Gramvaani, and MUCS respectively.
