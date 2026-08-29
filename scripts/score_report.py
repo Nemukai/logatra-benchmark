@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -39,6 +40,9 @@ FLAT_RATES_USD_PER_MIN = {"sarvam": 0.75 / INR_PER_USD,
                           "sarvam-saaras": 0.75 / INR_PER_USD,
                           "whisper": 0.006}
 SILVER_CONTRIBUTORS = {"sarvam", "gemini", "whisper"}
+# Which provider's verbatim output became the reference, for silver and
+# adjudicated rows: that provider scores ~0 on the row by construction.
+_REF_PROVIDER_RE = re.compile(r":(?:silver|adjudicated)\((\w+)")
 
 
 def wer_script_agnostic(ref: str, hyp: str) -> float:
@@ -76,7 +80,9 @@ def main() -> int:
                 audio_s = os.path.getsize(audio) / 32000
             except OSError:
                 continue
-            is_silver = ":silver(" in s.source
+            is_silver = ":silver(" in s.source or ":adjudicated(" in s.source
+            ref_match = _REF_PROVIDER_RE.search(s.source)
+            ref_provider = ref_match.group(1) if ref_match else None
             for prov in PROVIDERS:
                 cache = _cache_path(results_dir, prov, s.id)
                 if not cache.exists():
@@ -98,6 +104,7 @@ def main() -> int:
                     "code_mixed": s.code_mixed,
                     "split": s.split,
                     "silver_ref": is_silver,
+                    "self_ref": prov == ref_provider,
                     "wer": sc.wer,
                     "cer": sc.cer,
                     "wer_sa": wer_script_agnostic(s.reference_text, rec["text"]),
@@ -110,7 +117,7 @@ def main() -> int:
 
     def aggregate(keyfn):
         agg = defaultdict(lambda: {"wer_n": 0.0, "cer_n": 0.0, "sa_n": 0.0,
-                                   "w": 0, "n": 0, "lat": [], "rtf": [],
+                                   "w": 0, "n": 0, "wers": [], "lat": [], "rtf": [],
                                    "cost": 0.0, "audio_s": 0.0})
         for r in rows:
             a = agg[keyfn(r)]
@@ -120,6 +127,8 @@ def main() -> int:
             a["sa_n"] += r["wer_sa"] * w
             a["w"] += w
             a["n"] += 1
+            a["wers"].append(r["wer"])
+            a["self"] = a.get("self", 0) + (1 if r.get("self_ref") else 0)
             if r["latency_s"] is not None:
                 a["lat"].append(r["latency_s"])
             if r["rtf"] is not None:
@@ -135,6 +144,14 @@ def main() -> int:
                 "wer": round(a["wer_n"] / a["w"], 4),
                 "cer": round(a["cer_n"] / a["w"], 4),
                 "wer_script_agnostic": round(a["sa_n"] / a["w"], 4),
+                # Median per-sample WER: robust to repetition-loop outliers,
+                # so a provider that loops occasionally is visible as
+                # mean >> median rather than just an absurd mean.
+                "wer_median": round(sorted(a["wers"])[a["n"] // 2], 4),
+                # Share of rows whose reference is this provider's own output
+                # (silver/adjudicated rows only): those rows score ~0 by
+                # construction, so a high rate means the aggregate flatters.
+                "self_ref_rate": round(a.get("self", 0) / a["n"], 4),
                 "latency_median_s": round(lat[len(lat) // 2], 3) if lat else None,
                 "latency_p90_s": round(lat[int(len(lat) * 0.9)], 3) if lat else None,
                 "rtf_median": round(sorted(a["rtf"])[len(a["rtf"]) // 2], 4) if a["rtf"] else None,
