@@ -131,16 +131,26 @@ Keys via env: `SARVAM_API_KEY`, `OPENAI_API_KEY`, `OPENROUTER_API_KEY`
 (gemini/voxtral/gpt-audio), plus `DEEPGRAM_API_KEY`, `ELEVENLABS_API_KEY`,
 `ASSEMBLYAI_API_KEY`, `GOOGLE_APPLICATION_CREDENTIALS` for the unrun adapters.
 
-The audio itself (7.5 GB) and the results cache are distributed separately
-(Hugging Face dataset, in progress); the repo carries manifests, code, and the
-generated report.
+Gramvaani is the exception: its license is academic-use-only with no
+redistribution grant, so the committed manifests carry Gramvaani rows with an
+empty `reference_text` and scoring skips them. To reproduce the Gramvaani
+numbers, download OpenSLR 118 yourself and merge the references back in:
+
+```bash
+uv run python scripts/prepare_gramvaani.py       # downloads GV_Dev_5h + GV_Eval_3h
+uv run python scripts/merge_gramvaani_refs.py    # fills reference_text by sample id
+```
+
+The audio (about 1.1 GB after excluding Gramvaani) and the raw results cache
+are distributed as a Hugging Face dataset (see "Data and licensing" below);
+the repo carries manifests, code, and the generated report.
 
 ## Layout
 
 ```
 koe_benchmark/        harness: manifest, metrics, runner, silver consensus, adapters/
 data/manifests/       JSONL manifests (public + held-out), adjudication log
-scripts/              dataset prep, collection, scoring, report build
+scripts/              dataset prep, collection, scoring, report build, HF publish
 report/               generated leaderboard + per-case diff explorer (static HTML)
 tests/                pure-python tests for normalization and silver consensus
 ```
@@ -164,8 +174,23 @@ exposure is quantified per system (`self_ref_rate`).
 - Multi-language held-out audio beyond Hindi.
 - Speaker diarization (DER): metric implemented, no diarization runs yet.
 
-## License
+## Data and licensing
 
-Code is MIT ([LICENSE](LICENSE)). Held-out audio derives from CC-BY YouTube
-videos; per-video attribution in [ATTRIBUTION.md](ATTRIBUTION.md). Public
-split audio follows the licenses of FLEURS, Gramvaani, and MUCS respectively.
+Code is MIT ([LICENSE](LICENSE)). The audio and transcripts come from four
+sources with four different licenses, and only the ones that permit
+redistribution are shipped:
+
+| Subset | Source | License | Shipped in the dataset |
+|---|---|---|---|
+| `fleurs` (1,200 clips, 12 languages) | [google/fleurs](https://huggingface.co/datasets/google/fleurs), test split | CC-BY-4.0 | yes: audio, references, provider outputs |
+| `mucs2021` (3,136 clips, Hindi-English) | [OpenSLR 104](https://www.openslr.org/104/), subtask 2 test | CC-BY-SA-4.0 | yes: audio, references, provider outputs (ShareAlike applies to the derived outputs) |
+| `heldout_yt` (132 chunks, ~48 min) | 11 YouTube videos, CC-BY as set by each uploader | CC-BY-3.0 | yes: the 16 kHz chunks only, never full videos; per-video credit in [ATTRIBUTION.md](ATTRIBUTION.md) |
+| `gramvaani` (2,917 clips, Hindi telephony) | [OpenSLR 118](https://www.openslr.org/118/), Dev 5h + Eval 3h | academic use only; commercial use by permission of contact@gramvaani.org; no redistribution grant | **no**: neither audio, references, nor provider outputs. Scores are reported; reproduce them locally via `scripts/prepare_gramvaani.py` |
+
+Provider outputs (the results cache) are our own API calls, but they are
+transcriptions of the source audio, so they inherit the source license and
+are excluded wherever the source is. Raw archives under `data/raw/` are never
+redistributed.
+
+If you are a rights holder for any of the held-out videos and want your
+material removed, open an issue and it will be pulled promptly.

@@ -9,3 +9,8 @@ dist/
 results/
 data/raw/
 data/audio/
+
+# local-only copies of manifests with restricted references
+data/local/
+# regenerated locally from OpenSLR 118 (academic-use-only, not redistributed)
+data/manifests/gramvaani_hi.jsonl

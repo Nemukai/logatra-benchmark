@@ -32,12 +32,6 @@ def main() -> int:
     p.add_argument("manifests", nargs="+")
     p.add_argument("--out", required=True)
     p.add_argument("--per-source", type=int, default=75)
-    p.add_argument(
-        "--max-dur-hint",
-        type=float,
-        default=30.0,
-        help="(unused placeholder for future duration filtering)",
-    )
     args = p.parse_args()
 
     out_path = Path(args.out)

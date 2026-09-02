@@ -12,12 +12,12 @@ Normalization steps (applied to both reference and hypothesis before scoring):
    to ASCII 0-9 so "१२३" == "123".
 5. Whitespace collapsing.
 
-TODO(code-mix): transliteration-aware comparison. For Hinglish, the same word
-can be validly written in Devanagari ("नमस्ते") or Latin ("namaste"); plain WER
-counts that as an error. Plan: transliterate both sides to a common script
-with indic-transliteration / ai4bharat-transliteration before comparison and
-report it as a separate "script-agnostic WER" column, never silently replacing
-strict WER.
+Script-agnostic comparison (implemented): for Hinglish the same word can be
+validly written in Devanagari ("नमस्ते") or Latin ("namaste"), and plain WER
+counts that as an error. ``romanize`` transliterates Devanagari runs to Latin
+(IAST, diacritics stripped, schwa deletion) and ``script_agnostic_cer`` scores
+on the romanized strings. The report shows it as a separate "script-agnostic"
+column and never silently replaces strict WER with it.
 """
 
 from __future__ import annotations
