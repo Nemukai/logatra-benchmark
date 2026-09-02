@@ -39,7 +39,7 @@ speech-to-text benchmark for Indian languages and Hinglish built by
 [Nemukai](https://nemukai.com). Six commercial STT systems are scored on a
 public split and on a fresh held-out split of 2026 Creative Commons audio that
 no model could have trained on. The interactive leaderboard and per-case
-explorer live at [nemukai.com/labs/koe-benchmark](https://nemukai.com/labs/koe-benchmark/).
+explorer live at [nemukai.com/labs/koe-benchmark](https://nemukai.com/labs/koe-benchmark).
 
 Scoring and the full report regenerate offline from this data with the code
 in the GitHub repository; no API key is needed.

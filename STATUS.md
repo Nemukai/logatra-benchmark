@@ -25,7 +25,7 @@ cache. Nothing bills unless a fresh `run` is started explicitly.
   FLEURS (CC-BY-4.0), MUCS (CC-BY-SA-4.0) and the held-out YouTube chunks
   (CC-BY) ship with attribution. See README "Data and licensing".
 - Code: public at https://github.com/Nemukai/koe-benchmark.
-- Report: hosted at https://nemukai.com/labs/koe-benchmark/.
+- Report: hosted at https://nemukai.com/labs/koe-benchmark.
 - Hugging Face dataset + Space: `scripts/publish_hf.py` stages and uploads;
   needs a write token (`HF_TOKEN`).
 
