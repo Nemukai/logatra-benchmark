@@ -319,7 +319,7 @@ function renderMatrix(){
     if(v==null)return["transparent","var(--ink400)"];
     const t=Math.max(0,Math.min(1,v/100));
     const mix=(a,b)=>Math.round(a+(b-a)*t);
-    return[`rgb(${mix(low[0],31)},${mix(low[1],134)},${mix(low[2],154)})`, t>.45?"#F2EBDD":lowText];
+    return[`rgb(${mix(low[0],31)},${mix(low[1],134)},${mix(low[2],154)})`, t>.55?"#F2EBDD":lowText];
   };
   rows.forEach(rk=>{
     mx.insertAdjacentHTML("beforeend",`<div class="rowh">${rk}</div>`+P.map(p=>{
