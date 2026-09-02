@@ -28,6 +28,20 @@
    "cost_usd_per_hour": 0.539,
    "audio_minutes": 1014.9
   },
+  "sarvam-saaras-v4|public": {
+   "samples": 7230,
+   "wer": 0.3006,
+   "cer": 0.2071,
+   "wer_script_agnostic": 0.2864,
+   "wer_median": 0.2727,
+   "self_ref_rate": 0.0,
+   "latency_median_s": 0.559,
+   "latency_p90_s": 2.88,
+   "rtf_median": 0.0854,
+   "cost_usd_total": 9.1571,
+   "cost_usd_per_hour": 0.539,
+   "audio_minutes": 1019.4
+  },
   "whisper|public": {
    "samples": 7238,
    "wer": 0.6247,
@@ -108,6 +122,20 @@
    "latency_median_s": 1.529,
    "latency_p90_s": 4.083,
    "rtf_median": 0.0695,
+   "cost_usd_total": 0.4356,
+   "cost_usd_per_hour": 0.5389,
+   "audio_minutes": 48.5
+  },
+  "sarvam-saaras-v4|heldout": {
+   "samples": 132,
+   "wer": 0.258,
+   "cer": 0.2247,
+   "wer_script_agnostic": 0.2379,
+   "wer_median": 0.1343,
+   "self_ref_rate": 0.0,
+   "latency_median_s": 0.739,
+   "latency_p90_s": 0.953,
+   "rtf_median": 0.0336,
    "cost_usd_total": 0.4356,
    "cost_usd_per_hour": 0.5389,
    "audio_minutes": 48.5
@@ -198,6 +226,20 @@
    "cost_usd_per_hour": 0.539,
    "audio_minutes": 52.3
   },
+  "sarvam-saaras-v4|public": {
+   "samples": 324,
+   "wer": 0.2612,
+   "cer": 0.1621,
+   "wer_script_agnostic": 0.2526,
+   "wer_median": 0.2174,
+   "self_ref_rate": 0.0,
+   "latency_median_s": 0.588,
+   "latency_p90_s": 2.903,
+   "rtf_median": 0.078,
+   "cost_usd_total": 0.4702,
+   "cost_usd_per_hour": 0.539,
+   "audio_minutes": 52.3
+  },
   "whisper|public": {
    "samples": 324,
    "wer": 0.7834,
@@ -278,6 +320,20 @@
    "latency_median_s": 1.529,
    "latency_p90_s": 4.083,
    "rtf_median": 0.0695,
+   "cost_usd_total": 0.4356,
+   "cost_usd_per_hour": 0.5389,
+   "audio_minutes": 48.5
+  },
+  "sarvam-saaras-v4|heldout": {
+   "samples": 132,
+   "wer": 0.258,
+   "cer": 0.2247,
+   "wer_script_agnostic": 0.2379,
+   "wer_median": 0.1343,
+   "self_ref_rate": 0.0,
+   "latency_median_s": 0.739,
+   "latency_p90_s": 0.953,
+   "rtf_median": 0.0336,
    "cost_usd_total": 0.4356,
    "cost_usd_per_hour": 0.5389,
    "audio_minutes": 48.5
@@ -372,6 +428,20 @@
    "cost_usd_per_hour": 0.539,
    "audio_minutes": 241.5
   },
+  "sarvam-saaras-v4|fleurs": {
+   "samples": 1189,
+   "wer": 0.1903,
+   "cer": 0.0849,
+   "wer_script_agnostic": 0.1883,
+   "wer_median": 0.1282,
+   "self_ref_rate": 0.0,
+   "latency_median_s": 0.601,
+   "latency_p90_s": 2.935,
+   "rtf_median": 0.0569,
+   "cost_usd_total": 2.1888,
+   "cost_usd_per_hour": 0.539,
+   "audio_minutes": 243.7
+  },
   "whisper|fleurs": {
    "samples": 1200,
    "wer": 0.8384,
@@ -455,6 +525,20 @@
    "cost_usd_total": 2.7543,
    "cost_usd_per_hour": 0.539,
    "audio_minutes": 306.6
+  },
+  "sarvam-saaras-v4|mucs_hinglish": {
+   "samples": 3127,
+   "wer": 0.5061,
+   "cer": 0.4699,
+   "wer_script_agnostic": 0.4899,
+   "wer_median": 0.5,
+   "self_ref_rate": 0.0,
+   "latency_median_s": 0.526,
+   "latency_p90_s": 2.83,
+   "rtf_median": 0.1132,
+   "cost_usd_total": 2.7678,
+   "cost_usd_per_hour": 0.539,
+   "audio_minutes": 308.1
   },
   "whisper|mucs_hinglish": {
    "samples": 3129,
@@ -540,6 +624,20 @@
    "cost_usd_per_hour": 0.5389,
    "audio_minutes": 466.8
   },
+  "sarvam-saaras-v4|gramvaani": {
+   "samples": 2914,
+   "wer": 0.233,
+   "cer": 0.1146,
+   "wer_script_agnostic": 0.2159,
+   "wer_median": 0.2188,
+   "self_ref_rate": 0.0,
+   "latency_median_s": 0.572,
+   "latency_p90_s": 2.894,
+   "rtf_median": 0.0649,
+   "cost_usd_total": 4.2005,
+   "cost_usd_per_hour": 0.5389,
+   "audio_minutes": 467.7
+  },
   "whisper|gramvaani": {
    "samples": 2909,
    "wer": 0.5808,
@@ -620,6 +718,20 @@
    "latency_median_s": 1.529,
    "latency_p90_s": 4.083,
    "rtf_median": 0.0695,
+   "cost_usd_total": 0.4356,
+   "cost_usd_per_hour": 0.5389,
+   "audio_minutes": 48.5
+  },
+  "sarvam-saaras-v4|heldout_yt": {
+   "samples": 132,
+   "wer": 0.258,
+   "cer": 0.2247,
+   "wer_script_agnostic": 0.2379,
+   "wer_median": 0.1343,
+   "self_ref_rate": 0.0,
+   "latency_median_s": 0.739,
+   "latency_p90_s": 0.953,
+   "rtf_median": 0.0336,
    "cost_usd_total": 0.4356,
    "cost_usd_per_hour": 0.5389,
    "audio_minutes": 48.5
@@ -710,6 +822,20 @@
    "cost_usd_per_hour": 0.539,
    "audio_minutes": 18.0
   },
+  "sarvam-saaras-v4|as": {
+   "samples": 99,
+   "wer": 0.2537,
+   "cer": 0.0923,
+   "wer_script_agnostic": 0.2537,
+   "wer_median": 0.2,
+   "self_ref_rate": 0.0,
+   "latency_median_s": 0.617,
+   "latency_p90_s": 0.873,
+   "rtf_median": 0.0555,
+   "cost_usd_total": 0.1766,
+   "cost_usd_per_hour": 0.539,
+   "audio_minutes": 19.7
+  },
   "whisper|as": {
    "samples": 100,
    "wer": 1.1083,
@@ -790,6 +916,20 @@
    "latency_median_s": 1.053,
    "latency_p90_s": 3.914,
    "rtf_median": 0.0867,
+   "cost_usd_total": 0.2002,
+   "cost_usd_per_hour": 0.539,
+   "audio_minutes": 22.3
+  },
+  "sarvam-saaras-v4|bn": {
+   "samples": 100,
+   "wer": 0.1145,
+   "cer": 0.0308,
+   "wer_script_agnostic": 0.1145,
+   "wer_median": 0.0909,
+   "self_ref_rate": 0.0,
+   "latency_median_s": 1.054,
+   "latency_p90_s": 3.005,
+   "rtf_median": 0.0888,
    "cost_usd_total": 0.2002,
    "cost_usd_per_hour": 0.539,
    "audio_minutes": 22.3
@@ -878,6 +1018,20 @@
    "cost_usd_per_hour": 0.539,
    "audio_minutes": 17.6
   },
+  "sarvam-saaras-v4|gu": {
+   "samples": 100,
+   "wer": 0.1489,
+   "cer": 0.0381,
+   "wer_script_agnostic": 0.1489,
+   "wer_median": 0.1154,
+   "self_ref_rate": 0.0,
+   "latency_median_s": 0.588,
+   "latency_p90_s": 2.896,
+   "rtf_median": 0.0621,
+   "cost_usd_total": 0.1594,
+   "cost_usd_per_hour": 0.539,
+   "audio_minutes": 17.7
+  },
   "whisper|gu": {
    "samples": 100,
    "wer": 1.0482,
@@ -962,6 +1116,20 @@
    "cost_usd_per_hour": 0.5389,
    "audio_minutes": 535.0
   },
+  "sarvam-saaras-v4|hi": {
+   "samples": 3145,
+   "wer": 0.231,
+   "cer": 0.1235,
+   "wer_script_agnostic": 0.2139,
+   "wer_median": 0.2121,
+   "self_ref_rate": 0.0,
+   "latency_median_s": 0.584,
+   "latency_p90_s": 2.894,
+   "rtf_median": 0.0636,
+   "cost_usd_total": 4.8137,
+   "cost_usd_per_hour": 0.5389,
+   "audio_minutes": 535.9
+  },
   "whisper|hi": {
    "samples": 3141,
    "wer": 0.5625,
@@ -1028,6 +1196,20 @@
    "latency_median_s": 1.176,
    "latency_p90_s": 3.894,
    "rtf_median": 0.0889,
+   "cost_usd_total": 0.2047,
+   "cost_usd_per_hour": 0.539,
+   "audio_minutes": 22.8
+  },
+  "sarvam-saaras-v4|kn": {
+   "samples": 98,
+   "wer": 0.1317,
+   "cer": 0.0318,
+   "wer_script_agnostic": 0.1317,
+   "wer_median": 0.0952,
+   "self_ref_rate": 0.0,
+   "latency_median_s": 0.614,
+   "latency_p90_s": 2.941,
+   "rtf_median": 0.0454,
    "cost_usd_total": 0.2047,
    "cost_usd_per_hour": 0.539,
    "audio_minutes": 22.8
@@ -1102,6 +1284,20 @@
    "cost_usd_per_hour": 0.539,
    "audio_minutes": 25.7
   },
+  "sarvam-saaras-v4|ml": {
+   "samples": 99,
+   "wer": 0.1689,
+   "cer": 0.0369,
+   "wer_script_agnostic": 0.1689,
+   "wer_median": 0.1538,
+   "self_ref_rate": 0.0,
+   "latency_median_s": 0.617,
+   "latency_p90_s": 2.99,
+   "rtf_median": 0.0465,
+   "cost_usd_total": 0.2311,
+   "cost_usd_per_hour": 0.539,
+   "audio_minutes": 25.7
+  },
   "whisper|ml": {
    "samples": 100,
    "wer": 1.0741,
@@ -1171,6 +1367,20 @@
    "cost_usd_total": 0.2097,
    "cost_usd_per_hour": 0.539,
    "audio_minutes": 23.3
+  },
+  "sarvam-saaras-v4|mr": {
+   "samples": 99,
+   "wer": 0.1477,
+   "cer": 0.0388,
+   "wer_script_agnostic": 0.1308,
+   "wer_median": 0.1333,
+   "self_ref_rate": 0.0,
+   "latency_median_s": 0.634,
+   "latency_p90_s": 2.905,
+   "rtf_median": 0.048,
+   "cost_usd_total": 0.2113,
+   "cost_usd_per_hour": 0.539,
+   "audio_minutes": 23.5
   },
   "whisper|mr": {
    "samples": 100,
@@ -1242,6 +1452,20 @@
    "cost_usd_per_hour": 0.539,
    "audio_minutes": 18.8
   },
+  "sarvam-saaras-v4|or": {
+   "samples": 99,
+   "wer": 0.1534,
+   "cer": 0.0395,
+   "wer_script_agnostic": 0.1534,
+   "wer_median": 0.15,
+   "self_ref_rate": 0.0,
+   "latency_median_s": 0.562,
+   "latency_p90_s": 2.915,
+   "rtf_median": 0.0601,
+   "cost_usd_total": 0.1699,
+   "cost_usd_per_hour": 0.539,
+   "audio_minutes": 18.9
+  },
   "whisper|or": {
    "samples": 100,
    "wer": 1.182,
@@ -1308,6 +1532,20 @@
    "latency_median_s": 1.226,
    "latency_p90_s": 3.783,
    "rtf_median": 0.1141,
+   "cost_usd_total": 0.1701,
+   "cost_usd_per_hour": 0.539,
+   "audio_minutes": 18.9
+  },
+  "sarvam-saaras-v4|pa": {
+   "samples": 100,
+   "wer": 0.1107,
+   "cer": 0.0328,
+   "wer_script_agnostic": 0.1107,
+   "wer_median": 0.1,
+   "self_ref_rate": 0.0,
+   "latency_median_s": 0.594,
+   "latency_p90_s": 2.929,
+   "rtf_median": 0.0648,
    "cost_usd_total": 0.1701,
    "cost_usd_per_hour": 0.539,
    "audio_minutes": 18.9
@@ -1382,6 +1620,20 @@
    "cost_usd_per_hour": 0.539,
    "audio_minutes": 20.6
   },
+  "sarvam-saaras-v4|ta": {
+   "samples": 97,
+   "wer": 0.2195,
+   "cer": 0.0772,
+   "wer_script_agnostic": 0.2195,
+   "wer_median": 0.1818,
+   "self_ref_rate": 0.0,
+   "latency_median_s": 0.601,
+   "latency_p90_s": 2.917,
+   "rtf_median": 0.0523,
+   "cost_usd_total": 0.1855,
+   "cost_usd_per_hour": 0.539,
+   "audio_minutes": 20.6
+  },
   "whisper|ta": {
    "samples": 100,
    "wer": 0.5933,
@@ -1448,6 +1700,20 @@
    "latency_median_s": 1.075,
    "latency_p90_s": 3.708,
    "rtf_median": 0.1079,
+   "cost_usd_total": 0.1597,
+   "cost_usd_per_hour": 0.539,
+   "audio_minutes": 17.8
+  },
+  "sarvam-saaras-v4|te": {
+   "samples": 99,
+   "wer": 0.1607,
+   "cer": 0.04,
+   "wer_script_agnostic": 0.1607,
+   "wer_median": 0.1176,
+   "self_ref_rate": 0.0,
+   "latency_median_s": 0.585,
+   "latency_p90_s": 2.964,
+   "rtf_median": 0.0606,
    "cost_usd_total": 0.1597,
    "cost_usd_per_hour": 0.539,
    "audio_minutes": 17.8
@@ -1522,6 +1788,20 @@
    "cost_usd_per_hour": 0.539,
    "audio_minutes": 15.9
   },
+  "sarvam-saaras-v4|ur": {
+   "samples": 100,
+   "wer": 0.5137,
+   "cer": 0.4101,
+   "wer_script_agnostic": 0.5137,
+   "wer_median": 0.5,
+   "self_ref_rate": 0.0,
+   "latency_median_s": 0.592,
+   "latency_p90_s": 2.964,
+   "rtf_median": 0.0688,
+   "cost_usd_total": 0.1426,
+   "cost_usd_per_hour": 0.539,
+   "audio_minutes": 15.9
+  },
   "whisper|ur": {
    "samples": 100,
    "wer": 0.2407,
@@ -1591,6 +1871,20 @@
    "cost_usd_total": 2.7543,
    "cost_usd_per_hour": 0.539,
    "audio_minutes": 306.6
+  },
+  "sarvam-saaras-v4|hi-en": {
+   "samples": 3127,
+   "wer": 0.5061,
+   "cer": 0.4699,
+   "wer_script_agnostic": 0.4899,
+   "wer_median": 0.5,
+   "self_ref_rate": 0.0,
+   "latency_median_s": 0.526,
+   "latency_p90_s": 2.83,
+   "rtf_median": 0.1132,
+   "cost_usd_total": 2.7678,
+   "cost_usd_per_hour": 0.539,
+   "audio_minutes": 308.1
   },
   "whisper|hi-en": {
    "samples": 3129,
@@ -1668,6 +1962,6 @@
   "sarvam",
   "whisper"
  ],
- "row_count": 24393,
+ "row_count": 31755,
  "sample_count": 7385
 }

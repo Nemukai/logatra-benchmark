@@ -36,7 +36,7 @@ size_categories:
 Audio, manifests, and raw provider outputs for the
 [Koe Benchmark](https://github.com/Nemukai/koe-benchmark), an independent
 speech-to-text benchmark for Indian languages and Hinglish built by
-[Nemukai](https://nemukai.com). Six commercial STT systems are scored on a
+[Nemukai](https://nemukai.com). Seven commercial STT systems are scored on a
 public split and on a fresh held-out split of 2026 Creative Commons audio that
 no model could have trained on. The interactive leaderboard and per-case
 explorer live at [nemukai.com/labs/koe-benchmark](https://nemukai.com/labs/koe-benchmark).
@@ -56,7 +56,7 @@ in the GitHub repository; no API key is needed.
 | `report/data.json`, `report/rows.json` | aggregated and per-sample metrics (WER, CER, script-agnostic WER, latency, cost) |
 | `manifests/heldout_yt.adjudications.json` | every adjudication decision for the 36 held-out rows that failed the automatic consensus gate |
 
-Systems: Sarvam saaras:v3, Sarvam saarika:v2.5, OpenAI whisper-1, Gemini 3.5
+Systems: Sarvam saaras:v4, Sarvam saaras:v3, Sarvam saarika:v2.5, OpenAI whisper-1, Gemini 3.5
 Flash, Mistral Voxtral Small 24B, OpenAI gpt-audio.
 
 ## What is deliberately not here

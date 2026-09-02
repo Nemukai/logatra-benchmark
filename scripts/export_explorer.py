@@ -21,7 +21,7 @@ from koe_benchmark.manifest import load_manifest  # noqa: E402
 from koe_benchmark.runner import _cache_path  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
-PROVIDERS = ("sarvam-saaras", "sarvam", "whisper", "gemini", "voxtral", "gpt-audio")
+PROVIDERS = ("sarvam-saaras-v4", "sarvam-saaras", "sarvam", "whisper", "gemini", "voxtral", "gpt-audio")
 CUT = 600
 
 LANG_NAMES = {

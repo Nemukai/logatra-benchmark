@@ -34,7 +34,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 STAGE = ROOT / "data" / "local" / "hf_stage"
-RESULT_SYSTEMS = ("sarvam-saaras", "sarvam", "whisper", "gemini", "voxtral", "gpt-audio")
+RESULT_SYSTEMS = ("sarvam-saaras-v4", "sarvam-saaras", "sarvam", "whisper", "gemini", "voxtral", "gpt-audio")
 MANIFESTS = ("full_public.jsonl", "m1_public.jsonl", "m1_public_interleaved.jsonl",
              "mucs2021_hi_en.jsonl", "heldout_yt.jsonl", "heldout_yt.silver.jsonl",
              "heldout_yt.review.jsonl", "heldout_yt.adjudications.json",

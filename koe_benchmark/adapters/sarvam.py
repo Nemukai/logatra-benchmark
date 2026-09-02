@@ -47,6 +47,8 @@ class SarvamAdapter:
     sarvam-saaras -> saaras:v3, mode=transcribe (Koe production's model,
                      23 languages). Independent on the held-out split: it
                      did not contribute silver-reference hypotheses.
+    sarvam-saaras-v4 -> saaras:v4, mode=transcribe (Sarvam's latest line,
+                     added September 2026). Also independent.
     """
 
     def __init__(self, name: str = "sarvam", default_model: str = "saarika:v2.5",

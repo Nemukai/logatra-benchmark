@@ -1,9 +1,12 @@
-# Benchmark status (3 Sep 2026)
+# Benchmark status (3 Sep 2026, saaras v4 added)
 
 Scoring is complete and reproducible offline from the committed results
 cache. Nothing bills unless a fresh `run` is started explicitly.
 
 ## Done
+- sarvam-saaras-v4 (saaras:v4, mode=transcribe) over the full public
+  split (7,230 scored; the same 17 over-30 s clips fail as for v3) and
+  the held-out split (132/132). Run 3 Sep 2026 on Koe's Sarvam credits.
 - Full public split (7,253 samples): sarvam (saarika:v2.5), sarvam-saaras
   (saaras:v3), whisper (whisper-1).
 - M1 public subset (800): gemini, voxtral. Partial (336): gpt-audio.

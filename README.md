@@ -4,11 +4,12 @@ An independent benchmark for speech-to-text on Indian languages and Hinglish,
 built to answer one practical question honestly: **which STT engine should you
 actually run for Indian speech, at what accuracy, and at what price?**
 
-Six systems, scored on ~1,000 minutes of public Indic test audio and a
+Seven systems, scored on ~1,000 minutes of public Indic test audio and a
 fresh held-out split the models have almost certainly never seen:
 
 | System | Model | Coverage |
 |---|---|---|
+| `sarvam-saaras-v4` | Sarvam saaras:v4 | full public split + held-out |
 | `sarvam-saaras` | Sarvam saaras:v3 | full public split + held-out |
 | `sarvam` | Sarvam saarika:v2.5 | full public split + held-out |
 | `whisper` | OpenAI whisper-1 | full public split + held-out |
@@ -29,6 +30,7 @@ script choice); `med` = median per-sample WER (robust to repetition loops).
 
 | System | public WER | public med | held-out WER | held-out med | $/audio-hour |
 |---|---|---|---|---|---|
+| sarvam-saaras-v4 | 0.261 | 0.217 | 0.258 | 0.134 | ~0.54 |
 | gemini | 0.265 | 0.233 | 0.222 * | 0.117 * | ~0.43 |
 | sarvam-saaras | 0.323 | 0.286 | 0.228 | 0.106 | ~0.54 |
 | sarvam | 0.373 | 0.318 | 0.197 * | 0.000 * | ~0.54 |
@@ -42,7 +44,14 @@ its held-out score as an upper bound, not a clean measurement. The per-system
 (sarvam 58%, gemini 38%, whisper 5% of held-out rows use that system's own
 output as the reference).
 
-Two findings worth calling out:
+Three findings worth calling out:
+
+- **Saaras v4 (added September 2026) is the strongest engine on the public
+  split and the fastest of all seven** (0.6 s median per clip), but on the
+  fresh held-out audio it trails saaras v3 by about three points of
+  script-agnostic WER (23.8% vs 21.0%). Both are fully independent of the
+  held-out references, so that gap is a clean measurement: on unseen 2026
+  conversational Hindi, v3 still edges v4.
 
 - **Voxtral falls into repetition loops** on Indic audio (46 of 896 outputs
   are runaway repetitions), which is why its mean WER exceeds 100% while its
@@ -87,7 +96,7 @@ There is no human gold transcription yet. References are **silver**:
 Consequences, stated plainly: held-out scores for contributor systems are
 upper bounds (a system cannot disagree with its own reference), the
 `self_ref_rate` column quantifies the exposure per system, and the cleanest
-held-out comparison is between non-contributors (sarvam-saaras, gpt-audio,
+held-out comparison is between non-contributors (sarvam-saaras-v4, sarvam-saaras, gpt-audio,
 voxtral). Independent human transcription of the held-out audio is the top
 roadmap item and would upgrade silver to gold.
 
@@ -126,6 +135,11 @@ uv run python -m koe_benchmark run \
     --manifest data/manifests/m1_public.jsonl \
     --providers sarvam-saaras,whisper --workers 8
 ```
+
+Sarvam's real-time endpoint rejects clips longer than 30 s (HTTP 400), so
+17 public clips (11 FLEURS, 4 MUCS, 2 Gramvaani) are absent for every Sarvam
+entrant; the comparable-intersection tables are unaffected. The Batch API
+would close that gap and is on the roadmap.
 
 Keys via env: `SARVAM_API_KEY`, `OPENAI_API_KEY`, `OPENROUTER_API_KEY`
 (gemini/voxtral/gpt-audio), plus `DEEPGRAM_API_KEY`, `ELEVENLABS_API_KEY`,
@@ -169,6 +183,7 @@ exposure is quantified per system (`self_ref_rate`).
 
 - Independent human transcription of the held-out split (silver to gold).
 - Complete the public split for gemini, voxtral, gpt-audio.
+- Route the 17 over-30 s clips through Sarvam's Batch API.
 - Run the written-but-unrun adapters: Deepgram, ElevenLabs Scribe, Google,
   AssemblyAI.
 - Multi-language held-out audio beyond Hindi.

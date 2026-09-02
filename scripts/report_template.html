@@ -175,7 +175,7 @@ nav .links{align-items:center}
 <main class="wrap">
 <header class="hero">
   <h1>How well do speech APIs actually hear <em>India</em>?</h1>
-  <p>Six speech-to-text engines, tested on the same audio: read speech in 12 Indian languages, Hinglish conversations, noisy phone calls, and fresh real-world recordings no model has trained on. Every test case is inspectable below, ground truth against output, word by word.</p>
+  <p>Seven speech-to-text engines, tested on the same audio: read speech in 12 Indian languages, Hinglish conversations, noisy phone calls, and fresh real-world recordings no model has trained on. Every test case is inspectable below, ground truth against output, word by word.</p>
   <div class="statstrip" id="statstrip"></div>
 </header>
 
@@ -245,10 +245,10 @@ nav .links{align-items:center}
 <script src="cases.js"></script>
 <script>
 const DATA = /*__DATA__*/null;
-const P = ["sarvam-saaras","sarvam","whisper","gemini","voxtral","gpt-audio"];
-const PCOLOR = {"sarvam-saaras":"#42AD94",sarvam:"#3EA0B2",whisper:"#8670AA",gemini:"#E89A48",voxtral:"#C96F79","gpt-audio":"#619C4E"};
-const PLABEL = {"sarvam-saaras":"Sarvam saaras v3",sarvam:"Sarvam saarika v2.5",whisper:"OpenAI Whisper",gemini:"Gemini 3.5 Flash",voxtral:"Mistral Voxtral","gpt-audio":"OpenAI gpt-audio"};
-const PSUB = {"sarvam-saaras":"what Koe runs in production",sarvam:"previous Sarvam generation",whisper:"whisper-1 API",gemini:"via OpenRouter, minimal reasoning",voxtral:"voxtral-small-24b","gpt-audio":"OpenAI audio chat model"};
+const P = ["sarvam-saaras-v4","sarvam-saaras","sarvam","whisper","gemini","voxtral","gpt-audio"];
+const PCOLOR = {"sarvam-saaras-v4":"#6DC3AD","sarvam-saaras":"#42AD94",sarvam:"#3EA0B2",whisper:"#8670AA",gemini:"#E89A48",voxtral:"#C96F79","gpt-audio":"#619C4E"};
+const PLABEL = {"sarvam-saaras-v4":"Sarvam saaras v4","sarvam-saaras":"Sarvam saaras v3",sarvam:"Sarvam saarika v2.5",whisper:"OpenAI Whisper",gemini:"Gemini 3.5 Flash",voxtral:"Mistral Voxtral","gpt-audio":"OpenAI gpt-audio"};
+const PSUB = {"sarvam-saaras-v4":"Sarvam's latest, added Sep 2026","sarvam-saaras":"what Koe runs in production",sarvam:"previous Sarvam generation",whisper:"whisper-1 API",gemini:"via OpenRouter, minimal reasoning",voxtral:"voxtral-small-24b","gpt-audio":"OpenAI audio chat model"};
 const DSLABEL = {fleurs:"Read speech · FLEURS",mucs_hinglish:"Hinglish · MUCS",gramvaani:"Phone calls · Gramvaani",heldout_yt:"Real-world · fresh YouTube"};
 const cssVar=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 function applyChartDefaults(){Chart.defaults.color=cssVar("--chart-text");Chart.defaults.borderColor=cssVar("--chart-grid")}
@@ -266,7 +266,7 @@ document.querySelectorAll(".reveal").forEach(el=>io.observe(el));
 (function(){
   const langs=new Set(CASES.map(c=>c.langName));
   const mins=Math.round(CASES.reduce((a,c)=>a+1,0)&&DATA?Object.values(DATA.by_provider).reduce((m,v)=>Math.max(m,v.audio_minutes),0):0);
-  const items=[[CASES.length,"test cases you can inspect"],[langs.size,"languages & test types"],[6,"engines compared"],[CASES.filter(c=>c.real).length,"fresh 2026 real-world clips"],[mins,"minutes of audio per engine"]];
+  const items=[[CASES.length,"test cases you can inspect"],[langs.size,"languages & test types"],[P.length,"engines compared"],[CASES.filter(c=>c.real).length,"fresh 2026 real-world clips"],[mins,"minutes of audio per engine"]];
   const el=document.getElementById("statstrip");
   items.forEach(([n,s])=>{const d=document.createElement("div");d.innerHTML=`<b data-n="${n}">0</b><span>${s}</span>`;el.appendChild(d)});
   el.querySelectorAll("b").forEach(b=>{
@@ -463,7 +463,7 @@ document.getElementById("pgNext").addEventListener("click",()=>{page++;renderCas
 renderCases();
 
 document.getElementById("modelnote").textContent =
-  "sarvam saaras:v3 (mode=transcribe) · sarvam saarika:v2.5 · openai whisper-1 (auto-detect fallback where hints are unsupported) · google/gemini-3.5-flash via OpenRouter at minimal reasoning · mistralai/voxtral-small-24b-2507 · openai/gpt-audio. Costs from per-call billing (OpenRouter) or list price (Sarvam ₹0.75/min, Whisper $0.006/min). Leaderboard uses only clips every engine completed.";
+  "sarvam saaras:v4 (mode=transcribe, added Sep 2026) · sarvam saaras:v3 (mode=transcribe) · sarvam saarika:v2.5 · openai whisper-1 (auto-detect fallback where hints are unsupported) · google/gemini-3.5-flash via OpenRouter at minimal reasoning · mistralai/voxtral-small-24b-2507 · openai/gpt-audio. Costs from per-call billing (OpenRouter) or list price (Sarvam ₹0.75/min, Whisper $0.006/min). Leaderboard uses only clips every engine completed.";
 </script>
 </body>
 </html>
