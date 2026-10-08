@@ -32,5 +32,5 @@ class GoogleAdapter:
         require_env("GOOGLE_APPLICATION_CREDENTIALS", "Google Cloud STT")
         raise NotImplementedError(
             "Google adapter is a stub. See module docstring in "
-            "koe_benchmark/adapters/google.py for the implementation plan."
+            "logatra_benchmark/adapters/google.py for the implementation plan."
         )

@@ -26,20 +26,20 @@ tags:
   - benchmark
   - speech-to-text
   - evaluation
-pretty_name: Koe Benchmark
+pretty_name: Logatra Benchmark
 size_categories:
   - 1K<n<10K
 ---
 
-# Koe Benchmark
+# Logatra Benchmark
 
 Audio, manifests, and raw provider outputs for the
-[Koe Benchmark](https://github.com/Nemukai/koe-benchmark), an independent
+[Logatra Benchmark](https://github.com/Nemukai/logatra-benchmark), an independent
 speech-to-text benchmark for Indian languages and Hinglish built by
 [Nemukai](https://nemukai.com). Seven commercial STT systems are scored on a
 public split and on a fresh held-out split of 2026 Creative Commons audio that
 no model could have trained on. The interactive leaderboard and per-case
-explorer live at [nemukai.com/labs/koe-benchmark](https://nemukai.com/labs/koe-benchmark).
+explorer live at [nemukai.com/labs/logatra-benchmark](https://nemukai.com/labs/logatra-benchmark).
 
 Scoring and the full report regenerate offline from this data with the code
 in the GitHub repository; no API key is needed.
@@ -101,11 +101,11 @@ promptly.
 ## Citation
 
 ```bibtex
-@misc{koe-benchmark-2026,
-  title  = {Koe Benchmark: speech-to-text on Indian languages and Hinglish},
+@misc{logatra-benchmark-2026,
+  title  = {Logatra Benchmark: speech-to-text on Indian languages and Hinglish},
   author = {Singh, Priyansh Kumar},
   year   = {2026},
-  url    = {https://github.com/Nemukai/koe-benchmark}
+  url    = {https://github.com/Nemukai/logatra-benchmark}
 }
 ```
 
@@ -114,7 +114,7 @@ Please also cite the source datasets: FLEURS (Conneau et al., 2022), MUCS 2021
 
 ## Disclosure
 
-Nemukai's product Koe runs Sarvam saaras:v3 in production. The benchmark
+Nemukai's product Logatra runs Sarvam saaras:v3 in production. The benchmark
 exists because we needed to choose a provider and did not trust
 vendor-reported numbers. Every raw provider response is shipped here so the
 scoring can be checked.

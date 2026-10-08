@@ -30,5 +30,5 @@ class DeepgramAdapter:
         require_env("DEEPGRAM_API_KEY", "Deepgram")
         raise NotImplementedError(
             "Deepgram adapter is a stub. See module docstring in "
-            "koe_benchmark/adapters/deepgram.py for the implementation plan."
+            "logatra_benchmark/adapters/deepgram.py for the implementation plan."
         )

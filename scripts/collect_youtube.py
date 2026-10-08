@@ -29,10 +29,10 @@ import argparse
 import sys
 from pathlib import Path
 
-# Make `koe_benchmark` importable when run as a plain script from the repo root.
+# Make `logatra_benchmark` importable when run as a plain script from the repo root.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from koe_benchmark.manifest import Sample, write_manifest  # noqa: E402
+from logatra_benchmark.manifest import Sample, write_manifest  # noqa: E402
 
 CC_LICENSE_MARKER = "creative commons"
 
@@ -142,7 +142,7 @@ def main() -> int:
     # Append to an existing manifest if present.
     existing: list[Sample] = []
     if manifest_path.exists():
-        from koe_benchmark.manifest import load_manifest
+        from logatra_benchmark.manifest import load_manifest
 
         existing = load_manifest(manifest_path)
     existing_ids = {s.id for s in existing}

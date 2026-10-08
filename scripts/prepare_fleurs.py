@@ -1,4 +1,4 @@
-"""Prepare FLEURS Indic test splits for the Koe STT benchmark.
+"""Prepare FLEURS Indic test splits for the Logatra STT benchmark.
 
 Streams the test split of each Indic FLEURS config from the ungated
 HuggingFace dataset google/fleurs (no login required), caps at 100
@@ -26,7 +26,7 @@ from datasets import load_dataset
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from koe_benchmark.manifest import Sample, write_manifest  # noqa: E402
+from logatra_benchmark.manifest import Sample, write_manifest  # noqa: E402
 
 MAX_PER_LANG = 100
 TARGET_SR = 16_000

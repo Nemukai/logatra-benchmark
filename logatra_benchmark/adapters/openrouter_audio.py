@@ -4,9 +4,9 @@ One generic adapter covers every OpenRouter model that accepts audio input
 parts (verified live via GET /api/v1/models -> architecture.input_modalities).
 Registered provider names and their default models:
 
-    gemini     google/gemini-3.5-flash          (override: KOE_GEMINI_MODEL)
-    voxtral    mistralai/voxtral-small-24b-2507 (override: KOE_VOXTRAL_MODEL)
-    gpt-audio  openai/gpt-audio                 (override: KOE_GPT_AUDIO_MODEL)
+    gemini     google/gemini-3.5-flash          (override: LOGATRA_GEMINI_MODEL)
+    voxtral    mistralai/voxtral-small-24b-2507 (override: LOGATRA_VOXTRAL_MODEL)
+    gpt-audio  openai/gpt-audio                 (override: LOGATRA_GPT_AUDIO_MODEL)
 
 Auth: `OPENROUTER_API_KEY`.
 
@@ -75,11 +75,11 @@ class OpenRouterAudioAdapter:
         # Reasoning models burn hidden thinking tokens on transcription
         # (measured: 86% of Gemini 3.5 Flash cost was reasoning). Default is
         # "off"; models that reject disabling (Gemini 3.5 mandates reasoning)
-        # need "minimal"/"low" via KOE_<PROVIDER>_REASONING or the global
-        # KOE_OPENROUTER_REASONING. "on" leaves the model default.
+        # need "minimal"/"low" via LOGATRA_<PROVIDER>_REASONING or the global
+        # LOGATRA_OPENROUTER_REASONING. "on" leaves the model default.
         mode = (
-            os.environ.get(f"KOE_{self.name.upper().replace('-', '_')}_REASONING", "")
-            or os.environ.get("KOE_OPENROUTER_REASONING", "")
+            os.environ.get(f"LOGATRA_{self.name.upper().replace('-', '_')}_REASONING", "")
+            or os.environ.get("LOGATRA_OPENROUTER_REASONING", "")
             or "off"
         ).lower()
         if mode == "off":
@@ -114,7 +114,7 @@ class OpenRouterAudioAdapter:
                 headers={
                     "Authorization": f"Bearer {api_key}",
                     "HTTP-Referer": "https://nemukai.com",
-                    "X-Title": "Koe Benchmark",
+                    "X-Title": "Logatra Benchmark",
                 },
                 json=body,
                 timeout=self.timeout,
@@ -138,5 +138,5 @@ class OpenRouterAudioAdapter:
             raise TranscriptionError(f"{self.name}: null content for {audio_path.name}")
 
         # Keep the raw payload but drop nothing: usage/cost info is useful later.
-        payload["_koe_model"] = self.model
+        payload["_logatra_model"] = self.model
         return Transcription(text=text.strip(), raw=payload)

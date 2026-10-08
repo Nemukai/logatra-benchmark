@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Koe Benchmark — Indic speech-to-text, measured</title>
+<title>Logatra Benchmark — Indic speech-to-text, measured</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -169,7 +169,7 @@ nav .links{align-items:center}
 </style>
 </head>
 <body>
-<nav><div class="mark"><a href="/labs">nemukai</a> <span>/ koe benchmark</span></div>
+<nav><div class="mark"><a href="/labs">nemukai</a> <span>/ logatra benchmark</span></div>
 <div class="links"><a href="#leaderboard">leaderboard</a><a href="#matrix">languages</a><a href="#charts">charts</a><a href="#explorer">explorer</a><a href="#method">method</a>
 <button type="button" class="theme-toggle" id="themeToggle" aria-label="Switch theme"><svg viewBox="0 0 24 24" class="theme-icon" id="themeIcon"></svg><span class="theme-label" id="themeLabel"></span></button></div></nav>
 <main class="wrap">
@@ -240,7 +240,7 @@ nav .links{align-items:center}
   </div>
 </section>
 </main>
-<footer class="foot"><div>koe benchmark · nemukai · 2026</div><p>Raw per-call responses are cached and the whole report regenerates offline. Accuracy floors at 0% (a looping engine cannot score negative, it just fails).</p></footer>
+<footer class="foot"><div>logatra benchmark · nemukai · 2026</div><p>Raw per-call responses are cached and the whole report regenerates offline. Accuracy floors at 0% (a looping engine cannot score negative, it just fails).</p></footer>
 
 <script src="cases.js"></script>
 <script>
@@ -248,12 +248,12 @@ const DATA = {"by_provider": {"sarvam|public": {"samples": 7229, "wer": 0.3602, 
 const P = ["sarvam-saaras-v4","sarvam-saaras","sarvam","whisper","gemini","voxtral","gpt-audio"];
 const PCOLOR = {"sarvam-saaras-v4":"#6DC3AD","sarvam-saaras":"#42AD94",sarvam:"#3EA0B2",whisper:"#8670AA",gemini:"#E89A48",voxtral:"#C96F79","gpt-audio":"#619C4E"};
 const PLABEL = {"sarvam-saaras-v4":"Sarvam saaras v4","sarvam-saaras":"Sarvam saaras v3",sarvam:"Sarvam saarika v2.5",whisper:"OpenAI Whisper",gemini:"Gemini 3.5 Flash",voxtral:"Mistral Voxtral","gpt-audio":"OpenAI gpt-audio"};
-const PSUB = {"sarvam-saaras-v4":"Sarvam's latest, added Sep 2026","sarvam-saaras":"what Koe runs in production",sarvam:"previous Sarvam generation",whisper:"whisper-1 API",gemini:"via OpenRouter, minimal reasoning",voxtral:"voxtral-small-24b","gpt-audio":"OpenAI audio chat model"};
+const PSUB = {"sarvam-saaras-v4":"Sarvam's latest, added Sep 2026","sarvam-saaras":"what Logatra runs in production",sarvam:"previous Sarvam generation",whisper:"whisper-1 API",gemini:"via OpenRouter, minimal reasoning",voxtral:"voxtral-small-24b","gpt-audio":"OpenAI audio chat model"};
 const DSLABEL = {fleurs:"Read speech · FLEURS",mucs_hinglish:"Hinglish · MUCS",gramvaani:"Phone calls · Gramvaani",heldout_yt:"Real-world · fresh YouTube"};
 const cssVar=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 function applyChartDefaults(){Chart.defaults.color=cssVar("--chart-text");Chart.defaults.borderColor=cssVar("--chart-grid")}
 applyChartDefaults();Chart.defaults.font.family="'Plus Jakarta Sans',sans-serif";Chart.defaults.font.size=11.5;
-const CASES = window.KOE_CASES||[];
+const CASES = window.LOGATRA_CASES||[];
 const g=(o,k)=>o[k]||null;
 const acc=w=>w==null?null:Math.max(0,(1-w)*100);
 const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;

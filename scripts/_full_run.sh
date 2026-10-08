@@ -1,17 +1,17 @@
 #!/bin/zsh
 set -uo pipefail
-cd /Users/priyanshsingh/Developer/koe-benchmark
-set -a; source ~/Developer/Koe/.env.local; set +a
+cd /Users/priyanshsingh/Developer/Nemukai/koe-benchmark
+set -a; source ~/Developer/Nemukai/Koe/.env.local; set +a
 mkdir -p logs
 
 echo "=== FULL RUN START $(date) ==="
 
-uv run python -m koe_benchmark run \
+uv run python -m logatra_benchmark run \
   --manifest data/manifests/full_public.jsonl \
   --providers whisper --workers 8 >> logs/whisper.log 2>&1 &
 WPID=$!
 
-uv run python -m koe_benchmark run \
+uv run python -m logatra_benchmark run \
   --manifest data/manifests/full_public.jsonl \
   --providers sarvam --workers 4 >> logs/sarvam.log 2>&1 &
 SPID=$!

@@ -3,14 +3,14 @@
 Docs: https://platform.openai.com/docs/api-reference/audio/createTranscription
 
 Auth: `OPENAI_API_KEY`.
-Model: override with `KOE_OPENAI_STT_MODEL` (default `whisper-1`).
+Model: override with `LOGATRA_OPENAI_STT_MODEL` (default `whisper-1`).
 
 Caveat: the hosted `whisper-1` endpoint is not guaranteed to be Whisper
 large-v3. For a true large-v3 number, run the open weights locally (e.g. via
 faster-whisper) behind this same adapter interface, or set
-`KOE_OPENAI_STT_MODEL=gpt-4o-transcribe` to benchmark OpenAI's newer STT model.
+`LOGATRA_OPENAI_STT_MODEL=gpt-4o-transcribe` to benchmark OpenAI's newer STT model.
 Record which model id produced each result; it is stored in the cached raw
-response under `_koe_model`.
+response under `_logatra_model`.
 
 Uses `verbose_json` (supported by whisper-1) to also capture word timestamps.
 For models that reject verbose_json, it falls back to plain `json`.
@@ -36,7 +36,7 @@ class WhisperOpenAIAdapter:
 
     def transcribe(self, audio_path: Path, language: str | None = None) -> Transcription:
         api_key = require_env("OPENAI_API_KEY", "OpenAI")
-        model = os.environ.get("KOE_OPENAI_STT_MODEL", "whisper-1")
+        model = os.environ.get("LOGATRA_OPENAI_STT_MODEL", "whisper-1")
 
         # Whisper takes ISO 639-1 hints ("hi", "ta", ...). Strip any region tag.
         lang_hint = (language or "").split("-")[0] or None
@@ -55,7 +55,7 @@ class WhisperOpenAIAdapter:
             if payload is None:
                 raise TranscriptionError(f"OpenAI: no usable response for {audio_path.name}")
 
-        payload["_koe_model"] = model
+        payload["_logatra_model"] = model
         text = payload.get("text")
         if text is None:
             raise TranscriptionError(

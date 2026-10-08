@@ -215,7 +215,7 @@ def render_table(report: dict) -> str:
         from rich.console import Console
         from rich.table import Table
 
-        table = Table(title="Koe Benchmark")
+        table = Table(title="Logatra Benchmark")
         for col in ("Provider", "Split", "Samples", "WER", "CER", "Errors"):
             table.add_column(col)
         for r in rows:

@@ -30,9 +30,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import jiwer  # noqa: E402
 
-from koe_benchmark.manifest import load_manifest  # noqa: E402
-from koe_benchmark.metrics import normalize_text, romanize, score_asr  # noqa: E402
-from koe_benchmark.runner import _cache_path  # noqa: E402
+from logatra_benchmark.manifest import load_manifest  # noqa: E402
+from logatra_benchmark.metrics import normalize_text, romanize, score_asr  # noqa: E402
+from logatra_benchmark.runner import _cache_path  # noqa: E402
 
 PROVIDERS = ("sarvam", "sarvam-saaras", "sarvam-saaras-v4", "whisper", "gemini", "voxtral", "gpt-audio")
 INR_PER_USD = 83.5

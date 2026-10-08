@@ -23,9 +23,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from koe_benchmark.adapters import NotConfigured  # noqa: E402
-from koe_benchmark.manifest import load_manifest  # noqa: E402
-from koe_benchmark.runner import _cache_path, transcribe_sample  # noqa: E402
+from logatra_benchmark.adapters import NotConfigured  # noqa: E402
+from logatra_benchmark.manifest import load_manifest  # noqa: E402
+from logatra_benchmark.runner import _cache_path, transcribe_sample  # noqa: E402
 
 BATCH = 24
 

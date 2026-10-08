@@ -1,4 +1,4 @@
-# Koe Benchmark
+# Logatra Benchmark
 
 An independent benchmark for speech-to-text on Indian languages and Hinglish,
 built to answer one practical question honestly: **which STT engine should you
@@ -131,7 +131,7 @@ uv run pytest                             # normalization + silver tests
 To run systems fresh (needs keys, spends money):
 
 ```bash
-uv run python -m koe_benchmark run \
+uv run python -m logatra_benchmark run \
     --manifest data/manifests/m1_public.jsonl \
     --providers sarvam-saaras,whisper --workers 8
 ```
@@ -162,7 +162,7 @@ the repo carries manifests, code, and the generated report.
 ## Layout
 
 ```
-koe_benchmark/        harness: manifest, metrics, runner, silver consensus, adapters/
+logatra_benchmark/    harness: manifest, metrics, runner, silver consensus, adapters/
 data/manifests/       JSONL manifests (public + held-out), adjudication log
 scripts/              dataset prep, collection, scoring, report build, HF publish
 report/               generated leaderboard + per-case diff explorer (static HTML)
@@ -171,7 +171,7 @@ tests/                pure-python tests for normalization and silver consensus
 
 ## Disclosure
 
-This benchmark is built by [Nemukai](https://nemukai.com). Our product Koe
+This benchmark is built by [Nemukai](https://nemukai.com). Our product Logatra
 runs Sarvam saaras:v3 in production; the benchmark exists because we needed to
 choose a provider and did not trust vendor-reported numbers. That is a
 conflict of interest you should know about. Mitigations: every raw provider

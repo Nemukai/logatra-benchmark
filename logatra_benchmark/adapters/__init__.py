@@ -62,9 +62,9 @@ def get_adapter(name: str) -> STTAdapter:
 # OpenRouter audio-capable chat models used as STT engines:
 # provider name -> (default model id, env var for override)
 _OPENROUTER_AUDIO = {
-    "gemini": ("google/gemini-3.5-flash", "KOE_GEMINI_MODEL"),
-    "voxtral": ("mistralai/voxtral-small-24b-2507", "KOE_VOXTRAL_MODEL"),
-    "gpt-audio": ("openai/gpt-audio", "KOE_GPT_AUDIO_MODEL"),
+    "gemini": ("google/gemini-3.5-flash", "LOGATRA_GEMINI_MODEL"),
+    "voxtral": ("mistralai/voxtral-small-24b-2507", "LOGATRA_VOXTRAL_MODEL"),
+    "gpt-audio": ("openai/gpt-audio", "LOGATRA_GPT_AUDIO_MODEL"),
 }
 
 PROVIDERS = (

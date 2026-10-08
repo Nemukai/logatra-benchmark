@@ -23,7 +23,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from koe_benchmark.manifest import Sample, write_manifest  # noqa: E402
+from logatra_benchmark.manifest import Sample, write_manifest  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 AUDIO_DIR = ROOT / "data" / "audio" / "heldout_yt"

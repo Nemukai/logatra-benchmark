@@ -1,4 +1,4 @@
-"""Export per-case explorer data: report/cases.js (window.KOE_CASES).
+"""Export per-case explorer data: report/cases.js (window.LOGATRA_CASES).
 
 One entry per scored sample: ground truth, language, dataset, and every
 provider's transcript with accuracy numbers. Texts are truncated at 600 chars
@@ -17,8 +17,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from koe_benchmark.manifest import load_manifest  # noqa: E402
-from koe_benchmark.runner import _cache_path  # noqa: E402
+from logatra_benchmark.manifest import load_manifest  # noqa: E402
+from logatra_benchmark.runner import _cache_path  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 PROVIDERS = ("sarvam-saaras-v4", "sarvam-saaras", "sarvam", "whisper", "gemini", "voxtral", "gpt-audio")
@@ -81,7 +81,7 @@ def main() -> int:
                 "p": provs,
             })
 
-    js = "window.KOE_CASES=" + json.dumps(out, ensure_ascii=False, separators=(",", ":")) + ";"
+    js = "window.LOGATRA_CASES=" + json.dumps(out, ensure_ascii=False, separators=(",", ":")) + ";"
     (ROOT / "report" / "cases.js").write_text(js)
     print(f"wrote report/cases.js: {len(out)} cases, {len(js)/1e6:.1f} MB")
     return 0

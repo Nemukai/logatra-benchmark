@@ -27,7 +27,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from koe_benchmark.manifest import load_manifest, write_manifest  # noqa: E402
+from logatra_benchmark.manifest import load_manifest, write_manifest  # noqa: E402
 
 
 def main() -> int:

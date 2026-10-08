@@ -1,8 +1,8 @@
 #!/bin/zsh
 set -uo pipefail
-cd /Users/priyanshsingh/Developer/koe-benchmark
-set -a; source ~/Developer/Koe/.env.local; set +a
-export KOE_GEMINI_REASONING=minimal
+cd /Users/priyanshsingh/Developer/Nemukai/koe-benchmark
+set -a; source ~/Developer/Nemukai/Koe/.env.local; set +a
+export LOGATRA_GEMINI_REASONING=minimal
 
 spent() { uv run python -c "
 import json, glob

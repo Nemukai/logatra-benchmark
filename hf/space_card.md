@@ -1,5 +1,5 @@
 ---
-title: Koe Benchmark
+title: Logatra Benchmark
 emoji: 🎙️
 colorFrom: blue
 colorTo: green
@@ -10,5 +10,5 @@ short_description: STT leaderboard for Indian languages and Hinglish
 ---
 
 Interactive leaderboard and per-case explorer for the
-[Koe Benchmark](https://github.com/Nemukai/koe-benchmark). Data:
-[Nemukai/koe-benchmark](https://huggingface.co/datasets/Nemukai/koe-benchmark).
+[Logatra Benchmark](https://github.com/Nemukai/logatra-benchmark). Data:
+[Nemukai/logatra-benchmark](https://huggingface.co/datasets/Nemukai/logatra-benchmark).

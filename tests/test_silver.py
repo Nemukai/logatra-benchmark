@@ -1,7 +1,7 @@
 """Tests for the silver-reference consensus logic (pure python, no network)."""
 
-from koe_benchmark.adapters import PROVIDERS, get_adapter
-from koe_benchmark.silver import _symmetric_wer
+from logatra_benchmark.adapters import PROVIDERS, get_adapter
+from logatra_benchmark.silver import _symmetric_wer
 
 
 def test_symmetric_wer_identical():
@@ -36,12 +36,12 @@ def test_all_registered_providers_instantiate():
 def test_openrouter_audio_model_override(monkeypatch):
     adapter = get_adapter("gemini")
     assert adapter.model == "google/gemini-3.5-flash"
-    monkeypatch.setenv("KOE_GEMINI_MODEL", "google/gemini-9-test")
+    monkeypatch.setenv("LOGATRA_GEMINI_MODEL", "google/gemini-9-test")
     assert adapter.model == "google/gemini-9-test"
 
 
 def test_romanize_devanagari_english():
-    from koe_benchmark.metrics import romanize, script_agnostic_cer
+    from logatra_benchmark.metrics import romanize, script_agnostic_cer
     # Same English content, one written in Devanagari, one in Latin.
     a = "आई वांट टू स्टार्ट बाय आस्किंग यू"
     b = "I want to start by asking you"
@@ -50,7 +50,7 @@ def test_romanize_devanagari_english():
 
 
 def test_consensus_distance_prefers_script_agnostic():
-    from koe_benchmark.silver import _consensus_distance, _symmetric_wer
+    from logatra_benchmark.silver import _consensus_distance, _symmetric_wer
     a = "आई वांट टू स्टार्ट"
     b = "I want to start"
     assert _symmetric_wer(a, b) == 1.0

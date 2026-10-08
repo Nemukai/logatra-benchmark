@@ -28,5 +28,5 @@ class ElevenLabsAdapter:
         require_env("ELEVENLABS_API_KEY", "ElevenLabs Scribe")
         raise NotImplementedError(
             "ElevenLabs adapter is a stub. See module docstring in "
-            "koe_benchmark/adapters/elevenlabs.py for the implementation plan."
+            "logatra_benchmark/adapters/elevenlabs.py for the implementation plan."
         )

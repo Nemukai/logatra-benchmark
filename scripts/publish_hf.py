@@ -2,7 +2,7 @@
 
 What goes up (and why), see README "Data and licensing":
 
-  dataset repo (default Nemukai/koe-benchmark, type dataset)
+  dataset repo (default Nemukai/logatra-benchmark, type dataset)
     manifests/          committed manifests (Gramvaani rows carry no references)
     audio/fleurs/       CC-BY-4.0
     audio/mucs2021/     CC-BY-SA-4.0
@@ -11,7 +11,7 @@ What goes up (and why), see README "Data and licensing":
     report/             data.json + rows.json (metrics only)
     README.md           dataset card (hf/dataset_card.md)
 
-  space repo (default Nemukai/koe-benchmark, type space, static)
+  space repo (default Nemukai/logatra-benchmark, type space, static)
     index.html + cases.js from report/
 
 Gramvaani (OpenSLR 118) is academic-use-only with no redistribution grant and
@@ -20,7 +20,7 @@ is excluded everywhere: audio, references and provider outputs.
 Usage:
     HF_TOKEN=hf_... uv run python scripts/publish_hf.py --stage-only
     HF_TOKEN=hf_... uv run python scripts/publish_hf.py
-    HF_TOKEN=hf_... uv run python scripts/publish_hf.py --dataset Nemukai/koe-benchmark --space Nemukai/koe-benchmark
+    HF_TOKEN=hf_... uv run python scripts/publish_hf.py --dataset Nemukai/logatra-benchmark --space Nemukai/logatra-benchmark
 """
 
 from __future__ import annotations
@@ -129,8 +129,8 @@ def upload(ds: Path, sp: Path, dataset_id: str, space_id: str, token: str) -> No
 
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
-    p.add_argument("--dataset", default="Nemukai/koe-benchmark")
-    p.add_argument("--space", default="Nemukai/koe-benchmark")
+    p.add_argument("--dataset", default="Nemukai/logatra-benchmark")
+    p.add_argument("--space", default="Nemukai/logatra-benchmark")
     p.add_argument("--stage-only", action="store_true")
     args = p.parse_args()
 

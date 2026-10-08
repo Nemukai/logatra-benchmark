@@ -3,7 +3,7 @@
 Docs: https://docs.sarvam.ai/api-reference-docs/speech-to-text/transcribe
 
 Auth: `SARVAM_API_KEY` (sent as the `api-subscription-key` header).
-Model: override with `KOE_SARVAM_MODEL` (default `saarika:v2.5`).
+Model: override with `LOGATRA_SARVAM_MODEL` (default `saarika:v2.5`).
 
 The real-time endpoint accepts audio up to ~30s per request; for longer
 benchmark clips either pre-chunk the audio or switch to Sarvam's Batch API
@@ -44,7 +44,7 @@ class SarvamAdapter:
     """Sarvam STT. Two registered entrants share this adapter:
 
     sarvam        -> saarika:v2.5 (legacy line, 12 languages)
-    sarvam-saaras -> saaras:v3, mode=transcribe (Koe production's model,
+    sarvam-saaras -> saaras:v3, mode=transcribe (Logatra production's model,
                      23 languages). Independent on the held-out split: it
                      did not contribute silver-reference hypotheses.
     sarvam-saaras-v4 -> saaras:v4, mode=transcribe (Sarvam's latest line,
@@ -59,12 +59,12 @@ class SarvamAdapter:
         self.timeout = timeout
 
     def transcribe(self, audio_path: Path, language: str | None = None) -> Transcription:
-        # Accept both the benchmark's name and Koe's production env var name,
-        # so `source Koe/.env.local` works without re-exporting.
+        # Accept both the benchmark's name and Logatra's production env var name,
+        # so sourcing the Logatra app's .env.local works without re-exporting.
         api_key = os.environ.get("SARVAM_API_KEY", "").strip() or require_env(
             "SARVAM_API_SUBSCRIPTION_KEY", "Sarvam"
         )
-        model = os.environ.get("KOE_SARVAM_MODEL", "") or self.default_model
+        model = os.environ.get("LOGATRA_SARVAM_MODEL", "") or self.default_model
         language_code = LANGUAGE_MAP.get(language or "", "unknown")
 
         with audio_path.open("rb") as fh:

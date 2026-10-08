@@ -30,7 +30,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from koe_benchmark.manifest import Sample, write_manifest  # noqa: E402
+from logatra_benchmark.manifest import Sample, write_manifest  # noqa: E402
 
 FFMPEG = "/opt/homebrew/bin/ffmpeg"
 BASE_URL = "https://openslr.elda.org/resources/118"

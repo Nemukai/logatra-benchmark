@@ -1,4 +1,4 @@
-"""CLI entry point: python -m koe_benchmark run --manifest ... --providers sarvam,whisper"""
+"""CLI entry point: python -m logatra_benchmark run --manifest ... --providers sarvam,whisper"""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from .runner import render_table, run_benchmark
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="koe_benchmark")
+    parser = argparse.ArgumentParser(prog="logatra_benchmark")
     sub = parser.add_subparsers(dest="command", required=True)
 
     run = sub.add_parser("run", help="run providers over a manifest and print scores")

@@ -5,7 +5,7 @@ Pure python, no network.
 
 import unicodedata
 
-from koe_benchmark.metrics import normalize_text, score_asr
+from logatra_benchmark.metrics import normalize_text, score_asr
 
 
 class TestNormalizeText:
@@ -83,7 +83,7 @@ class TestScoreASR:
 
 class TestManifestRoundTrip:
     def test_sample_roundtrip(self, tmp_path):
-        from koe_benchmark.manifest import Sample, SpeakerSegment, load_manifest, write_manifest
+        from logatra_benchmark.manifest import Sample, SpeakerSegment, load_manifest, write_manifest
 
         sample = Sample(
             id="hi-public-0001",
@@ -109,7 +109,7 @@ class TestManifestRoundTrip:
     def test_invalid_split_rejected(self):
         import pytest
 
-        from koe_benchmark.manifest import Sample
+        from logatra_benchmark.manifest import Sample
 
         with pytest.raises(ValueError, match="split"):
             Sample(

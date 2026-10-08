@@ -30,5 +30,5 @@ class AssemblyAIAdapter:
         require_env("ASSEMBLYAI_API_KEY", "AssemblyAI")
         raise NotImplementedError(
             "AssemblyAI adapter is a stub. See module docstring in "
-            "koe_benchmark/adapters/assemblyai.py for the implementation plan."
+            "logatra_benchmark/adapters/assemblyai.py for the implementation plan."
         )

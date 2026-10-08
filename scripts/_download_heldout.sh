@@ -3,7 +3,7 @@
 # Usage: _download_heldout.sh <video_id> <duration_seconds>
 # Videos shorter than 600s are downloaded whole to full.wav.
 set -e
-cd /Users/priyanshsingh/Developer/koe-benchmark
+cd /Users/priyanshsingh/Developer/Nemukai/koe-benchmark
 ID=$1
 DUR=$2
 OUT="data/audio/heldout_yt/$ID"

@@ -29,7 +29,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT))
 
-from koe_benchmark.manifest import Sample, write_manifest  # noqa: E402
+from logatra_benchmark.manifest import Sample, write_manifest  # noqa: E402
 
 URL = "https://openslr.elda.org/resources/104/Hindi-English_test.tar.gz"
 RAW_DIR = REPO_ROOT / "data" / "raw" / "mucs2021"
