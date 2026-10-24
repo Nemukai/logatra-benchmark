@@ -14,3 +14,7 @@ data/audio/
 data/local/
 # regenerated locally from OpenSLR 118 (academic-use-only, not redistributed)
 data/manifests/gramvaani_hi.jsonl
+
+# API keys for local runs (see scripts/_*.sh)
+.env
+.env.*

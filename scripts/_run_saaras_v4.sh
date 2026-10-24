@@ -3,8 +3,8 @@
 # until no sample errors remain (errors are never cached, so each pass only
 # re-calls what failed, typically on 429 rate limits).
 set -uo pipefail
-cd /Users/priyanshsingh/Developer/Nemukai/koe-benchmark
-set -a; source ~/Developer/Nemukai/Koe/.env.local; set +a
+cd "$(dirname "$0")/.."
+set -a; source "${BENCHMARK_ENV_FILE:-.env}"; set +a
 echo "=== saaras v4 START $(date) ==="
 for pass in 1 2 3 4 5 6; do
   echo "--- pass $pass $(date)"
