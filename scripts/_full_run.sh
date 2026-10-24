@@ -1,7 +1,7 @@
 #!/bin/zsh
 set -uo pipefail
-cd /Users/priyanshsingh/Developer/Nemukai/koe-benchmark
-set -a; source ~/Developer/Nemukai/Koe/.env.local; set +a
+cd "$(dirname "$0")/.."
+set -a; source "${BENCHMARK_ENV_FILE:-.env}"; set +a
 mkdir -p logs
 
 echo "=== FULL RUN START $(date) ==="
