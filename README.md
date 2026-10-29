@@ -1,5 +1,11 @@
 # Logatra Benchmark
 
+![Logatra Benchmark](hf/assets/hero.png)
+
+**Leaderboard:** [nemukai.com/labs/logatra-benchmark](https://nemukai.com/labs/logatra-benchmark) ·
+**Dataset:** [huggingface.co/datasets/CooledNik/logatra-benchmark](https://huggingface.co/datasets/CooledNik/logatra-benchmark) ·
+**Space:** [huggingface.co/spaces/CooledNik/logatra-benchmark](https://huggingface.co/spaces/CooledNik/logatra-benchmark)
+
 An independent benchmark for speech-to-text on Indian languages and Hinglish,
 built to answer one practical question honestly: **which STT engine should you
 actually run for Indian speech, at what accuracy, and at what price?**
@@ -156,7 +162,7 @@ uv run python scripts/merge_gramvaani_refs.py    # fills reference_text by sampl
 ```
 
 The audio (about 1.1 GB after excluding Gramvaani) and the raw results cache
-are distributed as a Hugging Face dataset (see "Data and licensing" below);
+are distributed as a [Hugging Face dataset](https://huggingface.co/datasets/CooledNik/logatra-benchmark) (see "Data and licensing" below);
 the repo carries manifests, code, and the generated report.
 
 ## Layout
@@ -171,8 +177,9 @@ tests/                pure-python tests for normalization and silver consensus
 
 ## Disclosure
 
-This benchmark is built by [Nemukai](https://nemukai.com). Our product Logatra
-runs Sarvam saaras:v3 in production; the benchmark exists because we needed to
+This benchmark is built by [Nemukai](https://nemukai.com). Our product [Logatra](https://logatra.com)
+runs Sarvam saaras:v4 in production (since October 2026, even though v3 leads on
+the held-out split here); the benchmark exists because we needed to
 choose a provider and did not trust vendor-reported numbers. That is a
 conflict of interest you should know about. Mitigations: every raw provider
 response is cached and shipped, scoring is reproducible offline, the

@@ -2,16 +2,17 @@
 
 What goes up (and why), see README "Data and licensing":
 
-  dataset repo (default Nemukai/logatra-benchmark, type dataset)
+  dataset repo (default CooledNik/logatra-benchmark, type dataset)
     manifests/          committed manifests (Gramvaani rows carry no references)
     audio/fleurs/       CC-BY-4.0
     audio/mucs2021/     CC-BY-SA-4.0
     audio/heldout_yt/   CC-BY-3.0 YouTube chunks only (chunk_*.wav, never full.wav)
     results/<system>/   raw provider responses, minus every Gramvaani sample
     report/             data.json + rows.json (metrics only)
+    assets/             card figures and the Logatra logo (scripts/hf_figures.py)
     README.md           dataset card (hf/dataset_card.md)
 
-  space repo (default Nemukai/logatra-benchmark, type space, static)
+  space repo (default CooledNik/logatra-benchmark, type space, static)
     index.html + cases.js from report/
 
 Gramvaani (OpenSLR 118) is academic-use-only with no redistribution grant and
@@ -20,7 +21,7 @@ is excluded everywhere: audio, references and provider outputs.
 Usage:
     HF_TOKEN=hf_... uv run python scripts/publish_hf.py --stage-only
     HF_TOKEN=hf_... uv run python scripts/publish_hf.py
-    HF_TOKEN=hf_... uv run python scripts/publish_hf.py --dataset Nemukai/logatra-benchmark --space Nemukai/logatra-benchmark
+    HF_TOKEN=hf_... uv run python scripts/publish_hf.py --dataset CooledNik/logatra-benchmark --space CooledNik/logatra-benchmark
 """
 
 from __future__ import annotations
@@ -86,6 +87,8 @@ def stage() -> tuple[Path, Path]:
     # report metrics + card
     link_or_copy(ROOT / "report/data.json", ds / "report/data.json")
     link_or_copy(ROOT / "report/rows.json", ds / "report/rows.json")
+    for f in sorted((ROOT / "hf/assets").glob("*")):
+        link_or_copy(f, ds / "assets" / f.name)
     shutil.copy2(ROOT / "hf/dataset_card.md", ds / "README.md")
     shutil.copy2(ROOT / "ATTRIBUTION.md", ds / "ATTRIBUTION.md")
 
@@ -119,7 +122,12 @@ def upload(ds: Path, sp: Path, dataset_id: str, space_id: str, token: str) -> No
     api = HfApi(token=token)
     api.create_repo(dataset_id, repo_type="dataset", exist_ok=True)
     print(f"uploading dataset -> https://huggingface.co/datasets/{dataset_id}")
-    api.upload_large_folder(repo_id=dataset_id, repo_type="dataset", folder_path=str(ds))
+    # upload_large_folder was dropped in huggingface_hub 2.x, where upload_folder chunks via Xet
+    if hasattr(api, "upload_large_folder"):
+        api.upload_large_folder(repo_id=dataset_id, repo_type="dataset", folder_path=str(ds))
+    else:
+        api.upload_folder(repo_id=dataset_id, repo_type="dataset", folder_path=str(ds),
+                          commit_message="Publish Logatra Benchmark data")
 
     api.create_repo(space_id, repo_type="space", space_sdk="static", exist_ok=True)
     print(f"uploading space -> https://huggingface.co/spaces/{space_id}")
@@ -129,8 +137,8 @@ def upload(ds: Path, sp: Path, dataset_id: str, space_id: str, token: str) -> No
 
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
-    p.add_argument("--dataset", default="Nemukai/logatra-benchmark")
-    p.add_argument("--space", default="Nemukai/logatra-benchmark")
+    p.add_argument("--dataset", default="CooledNik/logatra-benchmark")
+    p.add_argument("--space", default="CooledNik/logatra-benchmark")
     p.add_argument("--stage-only", action="store_true")
     args = p.parse_args()
 
