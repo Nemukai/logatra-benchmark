@@ -25,7 +25,7 @@ from pathlib import Path
 
 import httpx
 
-from .base import NotConfigured, Transcription, TranscriptionError, require_env
+from .base import Transcription, TranscriptionError, require_env, shared_http_client
 
 API_URL = "https://openrouter.ai/api/v1/chat/completions"
 
@@ -47,7 +47,11 @@ _SUFFIX_TO_FORMAT = {".wav": "wav", ".mp3": "mp3"}
 class OpenRouterAudioAdapter:
     """STT via an audio-capable chat model on OpenRouter."""
 
-    def __init__(self, name: str, default_model: str, model_env: str, timeout: float = 300.0) -> None:
+    required_env = ("OPENROUTER_API_KEY",)
+
+    def __init__(self, name: str, default_model: str, model_env: str, timeout: float = 300.0,
+                 client: httpx.Client | None = None) -> None:
+        self._client = client
         self.name = name
         self._default_model = default_model
         self._model_env = model_env
@@ -109,7 +113,7 @@ class OpenRouterAudioAdapter:
         if reasoning is not None:
             body["reasoning"] = reasoning
         try:
-            resp = httpx.post(
+            resp = (self._client or shared_http_client()).post(
                 API_URL,
                 headers={
                     "Authorization": f"Bearer {api_key}",

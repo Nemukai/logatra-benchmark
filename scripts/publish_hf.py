@@ -18,6 +18,10 @@ What goes up (and why), see README "Data and licensing":
 Gramvaani (OpenSLR 118) is academic-use-only with no redistribution grant and
 is excluded everywhere: audio, references and provider outputs.
 
+Private split: nothing under data/private/ is ever staged (link_or_copy
+refuses it), and staging aborts if any staged manifest, rows.json or
+data.json carries a split == "private" row or key.
+
 Usage:
     HF_TOKEN=hf_... uv run python scripts/publish_hf.py --stage-only
     HF_TOKEN=hf_... uv run python scripts/publish_hf.py
@@ -34,6 +38,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+PRIVATE = ROOT / "data" / "private"
 STAGE = ROOT / "data" / "local" / "hf_stage"
 RESULT_SYSTEMS = ("sarvam-saaras-v4", "sarvam-saaras", "sarvam", "whisper", "gemini", "voxtral", "gpt-audio")
 MANIFESTS = ("full_public.jsonl", "m1_public.jsonl", "m1_public_interleaved.jsonl",
@@ -42,7 +47,17 @@ MANIFESTS = ("full_public.jsonl", "m1_public.jsonl", "m1_public_interleaved.json
              "heldout_yt.sources.json")
 
 
+def _is_private(src: Path) -> bool:
+    try:
+        src.resolve().relative_to(PRIVATE.resolve())
+    except ValueError:
+        return False
+    return True
+
+
 def link_or_copy(src: Path, dst: Path) -> None:
+    if _is_private(src):
+        raise SystemExit(f"refusing to stage private data: {src}")
     dst.parent.mkdir(parents=True, exist_ok=True)
     if dst.exists():
         return
@@ -95,6 +110,7 @@ def stage() -> tuple[Path, Path]:
     # space
     link_or_copy(ROOT / "report/index.html", sp / "index.html")
     link_or_copy(ROOT / "report/cases.js", sp / "cases.js")
+    link_or_copy(ROOT / "report/vendor/chart.umd.min.js", sp / "vendor/chart.umd.min.js")
     shutil.copy2(ROOT / "hf/space_card.md", sp / "README.md")
 
     # sanity: nothing gramvaani, no full.wav
@@ -108,6 +124,21 @@ def stage() -> tuple[Path, Path]:
                 row = json.loads(line)
                 if row.get("source") == "gramvaani_telephony" and row.get("reference_text"):
                     raise SystemExit(f"{m.name}: Gramvaani reference leaked ({row['id']})")
+
+    # sanity: no private-split material anywhere in the stage
+    for m in (ds / "manifests").glob("*.jsonl"):
+        for line in m.read_text(encoding="utf-8").splitlines():
+            if line.strip() and json.loads(line).get("split") == "private":
+                raise SystemExit(f"{m.name}: private-split row staged")
+    if any(r.get("split") == "private"
+           for r in json.loads((ds / "report/rows.json").read_text())):
+        raise SystemExit("report/rows.json carries private-split rows")
+    data = json.loads((ds / "report/data.json").read_text())
+    if data.get("comparable_counts", {}).get("private") or any(
+            k.endswith("|private") for k in data.get("by_provider", {})):
+        raise SystemExit("report/data.json carries private-split aggregates")
+    if any(_is_private(p) for p in STAGE.rglob("*") if p.is_symlink()):
+        raise SystemExit("staged symlink points into data/private/")
 
     size = sum(p.stat().st_size for p in ds.rglob("*") if p.is_file()) / 1e9
     print(f"staged dataset: {n_audio} audio files, {n_res} result records "

@@ -6,14 +6,31 @@ Every provider adapter implements the `STTAdapter` protocol: a `name`, and a
 Adapters read API keys from environment variables and raise `NotConfigured`
 with a helpful message when the key is missing, so the runner can skip (rather
 than crash on) unconfigured providers.
+
+Optional adapter attributes the runner understands (all have safe defaults via
+`adapter_required_env`, `adapter_supports`, ...):
+
+    required_env: tuple[str, ...]   env vars that must be set (checked by
+                                    `--dry-run` without any network call)
+    supports(language, code_mixed) -> str | None
+                                    None if the language can be run, else a
+                                    human-readable reason (sample is skipped,
+                                    not counted as an error)
+    wants_code_mixed: bool          if True the runner passes
+                                    `code_mixed=<bool>` to `transcribe`
+    model: str                      model id recorded in the cache
 """
 
 from __future__ import annotations
 
 import os
+import threading
+import wave
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Protocol, runtime_checkable
+
+import httpx
 
 
 class NotConfigured(Exception):
@@ -22,6 +39,15 @@ class NotConfigured(Exception):
 
 class TranscriptionError(Exception):
     """Raised when a provider call fails (HTTP error, bad response shape, ...)."""
+
+
+class Unsupported(Exception):
+    """Raised when a sample cannot be run on this provider by design.
+
+    Examples: language not in the provider's matrix, clip longer than the
+    endpoint accepts and no long-audio path configured. The runner records a
+    `skipped` reason and does NOT count it as an error (and does not bill).
+    """
 
 
 def require_env(var: str, provider: str) -> str:
@@ -79,6 +105,87 @@ class STTAdapter(Protocol):
 
         Raises:
             NotConfigured: credentials missing.
+            Unsupported: the sample cannot be run on this provider (skip).
             TranscriptionError: provider call failed.
         """
         ...
+
+
+# ---------------------------------------------------------------------------
+# Helpers shared by adapters and the runner.
+# ---------------------------------------------------------------------------
+
+_client_lock = threading.Lock()
+_shared_client: httpx.Client | None = None
+
+
+def shared_http_client() -> httpx.Client:
+    """One process-wide httpx.Client (thread-safe, keeps connections alive)."""
+    global _shared_client
+    with _client_lock:
+        if _shared_client is None:
+            _shared_client = httpx.Client(timeout=300.0)
+        return _shared_client
+
+
+class HTTPAdapter:
+    """Base for HTTP adapters: injectable client so tests can mock transport."""
+
+    name: str = "base"
+    required_env: tuple[str, ...] = ()
+    wants_code_mixed: bool = False
+
+    def __init__(self, client: httpx.Client | None = None, timeout: float = 300.0) -> None:
+        self._client = client
+        self.timeout = timeout
+
+    @property
+    def http(self) -> httpx.Client:
+        return self._client if self._client is not None else shared_http_client()
+
+    def supports(self, language: str | None, code_mixed: bool = False) -> str | None:
+        return None
+
+
+def http_error(provider: str, resp: httpx.Response, audio_path: Path | None = None) -> TranscriptionError:
+    """Uniform error text; the runner retries on 'HTTP 429/5xx' in the message."""
+    where = f" for {audio_path.name}" if audio_path is not None else ""
+    return TranscriptionError(f"{provider} HTTP {resp.status_code}{where}: {resp.text[:500]}")
+
+
+def audio_duration_s(path: Path) -> float:
+    """Duration in seconds: WAV header if readable, else 16 kHz/16-bit mono size.
+
+    Raises FileNotFoundError if the file is missing.
+    """
+    try:
+        with wave.open(str(path), "rb") as w:
+            rate = w.getframerate()
+            if rate:
+                return w.getnframes() / float(rate)
+    except (wave.Error, EOFError):
+        pass
+    except FileNotFoundError:
+        raise
+    return os.path.getsize(path) / 32000.0
+
+
+def adapter_required_env(adapter) -> tuple[str, ...]:
+    return tuple(getattr(adapter, "required_env", ()) or ())
+
+
+def adapter_supports(adapter, language: str | None, code_mixed: bool = False) -> str | None:
+    fn = getattr(adapter, "supports", None)
+    if fn is None:
+        return None
+    return fn(language, code_mixed)
+
+
+def missing_env(adapter) -> list[str]:
+    """Required env vars that are unset. Entries 'A|B' mean either A or B."""
+    missing = []
+    for spec in adapter_required_env(adapter):
+        options = spec.split("|")
+        if not any(os.environ.get(v, "").strip() for v in options):
+            missing.append(" or ".join(options))
+    return missing

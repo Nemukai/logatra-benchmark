@@ -15,7 +15,9 @@ sample. Fields:
     source          str   provenance, e.g. "ai4bharat/IndicVoices",
                     "youtube:VIDEO_ID", "self-recorded"
     license         str   license of the audio, e.g. "CC-BY-4.0"
-    split           str   "public" (contaminated baseline) or "heldout"
+    split           str   "public" (contaminated baseline), "heldout" (fresh,
+                          published audio) or "private" (fresh audio that is
+                          never published; see PRIVATE_REPORT_DIR)
 """
 
 from __future__ import annotations
@@ -25,9 +27,36 @@ from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Iterator, Literal
 
-Split = Literal["public", "heldout"]
+Split = Literal["public", "heldout", "private"]
 
-VALID_SPLITS: tuple[str, ...] = ("public", "heldout")
+VALID_SPLITS: tuple[str, ...] = ("public", "heldout", "private")
+
+# Splits whose texts and scores may appear in report/ and on Hugging Face.
+PUBLISHABLE_SPLITS: tuple[str, ...] = ("public", "heldout")
+
+# The only place private-split scores, rows or cases may be written. It is
+# gitignored (data/private/) and never staged by scripts/publish_hf.py.
+REPO_ROOT = Path(__file__).resolve().parents[1]
+PRIVATE_DIR = REPO_ROOT / "data" / "private"
+PRIVATE_REPORT_DIR = PRIVATE_DIR / "reports"
+
+
+def is_private_path(path: str | Path) -> bool:
+    """True if ``path`` resolves inside data/private/."""
+    try:
+        Path(path).resolve().relative_to(PRIVATE_DIR.resolve())
+    except ValueError:
+        return False
+    return True
+
+
+def require_private_output(path: str | Path) -> None:
+    """Refuse to write private-split material anywhere but data/private/."""
+    if not is_private_path(path):
+        raise SystemExit(
+            f"refusing to write private-split output to {path}: private rows "
+            f"may only be written under {PRIVATE_REPORT_DIR} (gitignored)"
+        )
 
 
 @dataclass(slots=True)

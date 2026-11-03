@@ -1,4 +1,25 @@
-# Benchmark status (3 Sep 2026, saaras v4 added)
+# Benchmark status (3 Nov 2026, audit fixes)
+
+## Audit fixes (3 Nov 2026, branch feat/fixes-private-data)
+- Script-agnostic WER v2 (`metrics.script_agnostic_pair`): all Brahmic
+  scripts romanized, Urdu compared via a shared consonant skeleton. Fixes
+  0% scores for Urdu-in-Devanagari (Sarvam) and Odia-in-Devanagari
+  (Whisper). Devanagari path and strict WER unchanged.
+- Rescored from the HF dataset cache (audio + results). Gramvaani rows are
+  carried forward from the previous rows.json (`--carry-forward`): their
+  provider outputs are not redistributed, so they cannot be rescored here.
+- 95% bootstrap CIs (held-out clustered by source video) on comparable
+  scores, matrix cells and pairwise gaps; page shows CIs, n per cell and
+  shared ranks for statistical ties.
+- Held-out leaderboard ranks only non-contributors; saarika, Gemini and
+  Whisper are listed unranked with self_ref_rate and non-self-row scores.
+- Copy: no "unseen/after every model" claims (saaras v4 postdates the
+  audio), public split is a v4/Gemini tie, Logatra runs saaras v4 since
+  25 Oct 2026, matrix is word-weighted.
+- Chart.js 4.4.9 vendored (report/vendor/); page renders without it.
+- HF card images served from GitHub raw (no dataset-download inflation).
+- `split: "private"` supported; never written to report/ or staged for HF.
+- Koe -> Logatra sweep: only historical logs/*.log still say "Koe".
 
 Scoring is complete and reproducible offline from the committed results
 cache. Nothing bills unless a fresh `run` is started explicitly.

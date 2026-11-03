@@ -1,0 +1,17 @@
+{
+  "_comment": "Channels to list (newest uploads first) in addition to search. Inclusion here does NOT imply CC: every video's license is checked at probe time. Sadhguru regional channels are largely dubbed voice-overs (real speech, but studio-read).",
+  "hi":    ["https://www.youtube.com/@SadhguruHindi/videos", "https://www.youtube.com/@narendramodi/videos", "https://www.youtube.com/@SansadTV/videos"],
+  "bn":    ["https://www.youtube.com/@SadhguruBangla/videos"],
+  "ta":    ["https://www.youtube.com/@SadhguruTamil/videos", "https://www.youtube.com/@KarkaKasadara/videos"],
+  "te":    ["https://www.youtube.com/@SadhguruTelugu/videos"],
+  "mr":    ["https://www.youtube.com/@SadhguruMarathi/videos"],
+  "gu":    ["https://www.youtube.com/@SadhguruGujarati/videos"],
+  "kn":    ["https://www.youtube.com/@SadhguruKannada/videos"],
+  "ml":    ["https://www.youtube.com/@SadhguruMalayalam/videos"],
+  "pa":    ["https://www.youtube.com/@SadhguruPunjabi/videos"],
+  "or":    ["https://www.youtube.com/@SadhguruOdia/videos"],
+  "as":    [],
+  "ur":    ["https://www.youtube.com/@VOAUrdu/videos", "https://www.youtube.com/@dwurdu/videos"],
+  "hi-en": ["https://www.youtube.com/@SansadTV/videos"],
+  "en-IN": ["https://www.youtube.com/@PIBIndia/videos", "https://www.youtube.com/@IITMadrasOfficial/videos", "https://www.youtube.com/@SansadTV/videos"]
+}

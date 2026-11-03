@@ -7,7 +7,7 @@ sdk: static
 pinned: false
 license: mit
 short_description: STT leaderboard for Indian languages and Hinglish
-thumbnail: https://huggingface.co/datasets/CooledNik/logatra-benchmark/resolve/main/assets/hero.png
+thumbnail: https://raw.githubusercontent.com/Nemukai/logatra-benchmark/main/hf/assets/hero.png
 datasets:
   - CooledNik/logatra-benchmark
 tags:
@@ -18,7 +18,7 @@ tags:
   - logatra
 ---
 
-![Logatra Benchmark](https://huggingface.co/datasets/CooledNik/logatra-benchmark/resolve/main/assets/hero.png)
+![Logatra Benchmark](https://raw.githubusercontent.com/Nemukai/logatra-benchmark/main/hf/assets/hero.png)
 
 Interactive leaderboard and per-case explorer for the **Logatra Benchmark**, an
 independent speech-to-text benchmark for Indian languages and Hinglish built by

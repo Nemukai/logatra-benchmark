@@ -11,7 +11,8 @@ built to answer one practical question honestly: **which STT engine should you
 actually run for Indian speech, at what accuracy, and at what price?**
 
 Seven systems, scored on ~1,000 minutes of public Indic test audio and a
-fresh held-out split the models have almost certainly never seen:
+fresh 2026 held-out split that is far less exposed to training than any
+public test set (but see the caveat on saaras v4 below):
 
 | System | Model | Coverage |
 |---|---|---|
@@ -78,7 +79,10 @@ flattering. The benchmark therefore has two layers:
   headline.
 - `split: heldout` (132 samples, ~48 minutes): Hindi/Hinglish conversational
   audio chunked from 11 Creative Commons (CC-BY) YouTube videos uploaded
-  January to June 2026, after every tested model's release. Interviews,
+  January to June 2026. That is after the release of most tested models,
+  but not all: Sarvam saaras v4 was released in September 2026, after this
+  audio was public, and no vendor's training data can be verified, so the
+  split is "much less likely to have been trained on", not "unseen". Interviews,
   podcasts, and lecture-style speech, heavy on real code-mixing. Currently
   **Hindi only**; see [ATTRIBUTION.md](ATTRIBUTION.md) for the sources.
 
@@ -110,10 +114,24 @@ roadmap item and would upgrade silver to gold.
 
 - **Strict WER/CER** on Indic-aware normalized text: NFC, lowercase,
   Indic digit mapping, Indic punctuation stripping (danda, Urdu marks).
-- **Script-agnostic WER**: Devanagari runs are transliterated to Latin
-  (IAST, diacritics stripped, schwa deletion) before comparison, so
-  "आई वांट टू स्टार्ट" vs "I want to start" is not an error. Reported as a
-  separate column, never silently replacing strict WER.
+- **Script-agnostic WER**: every Indic-script run (Devanagari,
+  Bengali/Assamese, Gurmukhi, Gujarati, Odia, Tamil, Telugu, Kannada,
+  Malayalam) is transliterated to Latin (IAST, diacritics stripped, schwa
+  deletion) before comparison, so "स्टार्ट" vs "start", or Odia speech
+  written in Devanagari, is not an error. Urdu (Perso-Arabic) omits short
+  vowels, so whenever Urdu script is on either side both sides are reduced
+  to a shared consonant skeleton instead (more lenient; rationale in
+  `logatra_benchmark/metrics.py:consonant_skeleton`). The Devanagari path is
+  unchanged from v1. Reported as a separate column, never silently replacing
+  strict WER.
+- **Aggregation**: all WER figures (tables, leaderboard, language matrix)
+  are word-weighted: sum of per-sample errors over sum of reference words.
+  Page "accuracy" is max(0, 1 − word-weighted script-agnostic WER).
+- **Uncertainty**: 95% percentile bootstrap CIs (B=2000, fixed seed) on every
+  comparable-set score, every language cell and every pairwise gap. The
+  held-out split resamples whole source videos (chunks of one video are
+  correlated); the public split resamples samples. A gap whose CI includes 0
+  is reported as a tie, and the page shares ranks accordingly.
 - **Median per-sample WER**: robustness view; loops and hallucinations move
   the mean, not the median.
 - **Latency, RTF, cost**: per-call latency from the runner, real-time factor,
@@ -126,13 +144,30 @@ responses are cached as JSON under `results/<system>/<sample_id>.json`, so
 scoring and the full report rebuild **offline, without any API key**:
 
 ```bash
-uv sync
+uv sync --extra dev                       # dev extra installs pytest
+# audio + results cache from the HF dataset (public, no token):
+uv run --with huggingface_hub python -c "from huggingface_hub import snapshot_download; \
+  snapshot_download('CooledNik/logatra-benchmark', repo_type='dataset', \
+  local_dir='data/local/hf_snapshot', allow_patterns=['audio/*','results/*'])"
+mv data/local/hf_snapshot/results results
+mv data/local/hf_snapshot/audio data/audio
 uv run python scripts/score_report.py --out report/data.json \
+    --carry-forward report/rows.json \
     data/manifests/full_public.jsonl data/manifests/heldout_yt.silver.jsonl
 uv run python scripts/export_explorer.py
 uv run python scripts/build_report.py     # writes report/index.html
-uv run pytest                             # normalization + silver tests
+uv run pytest                             # metrics, scoring, silver tests
 ```
+
+`--carry-forward` keeps the previously published Gramvaani rows (metrics
+only): the Gramvaani provider outputs are not redistributed, so they cannot
+be rescored from the public cache (see below).
+
+Private split: manifests may use `split: "private"` for fresh audio that is
+never published. Scoring, the explorer and the page build drop private rows
+by default; `--include-private` on `score_report.py` / `export_explorer.py`
+writes only to `data/private/reports/` (gitignored), and
+`scripts/publish_hf.py` refuses to stage anything under `data/private/`.
 
 To run systems fresh (needs keys, spends money):
 
@@ -153,8 +188,11 @@ Keys via env: `SARVAM_API_KEY`, `OPENAI_API_KEY`, `OPENROUTER_API_KEY`
 
 Gramvaani is the exception: its license is academic-use-only with no
 redistribution grant, so the committed manifests carry Gramvaani rows with an
-empty `reference_text` and scoring skips them. To reproduce the Gramvaani
-numbers, download OpenSLR 118 yourself and merge the references back in:
+empty `reference_text`, and neither the references nor the provider outputs
+are in the HF dataset. The report keeps the Gramvaani rows scored in the
+original run via `--carry-forward`. To rescore Gramvaani from scratch you need
+both the references (download OpenSLR 118 yourself) and your own provider
+outputs for those clips (a paid `run` over the Gramvaani manifest); then:
 
 ```bash
 uv run python scripts/prepare_gramvaani.py       # downloads GV_Dev_5h + GV_Eval_3h
@@ -172,7 +210,7 @@ logatra_benchmark/    harness: manifest, metrics, runner, silver consensus, adap
 data/manifests/       JSONL manifests (public + held-out), adjudication log
 scripts/              dataset prep, collection, scoring, report build, HF publish
 report/               generated leaderboard + per-case diff explorer (static HTML)
-tests/                pure-python tests for normalization and silver consensus
+tests/                pure-python tests: normalization, script-agnostic WER, scoring/bootstrap, silver
 ```
 
 ## Disclosure

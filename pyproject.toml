@@ -19,6 +19,17 @@ diarization = [
 collect = [
     "yt-dlp>=2024.4.9",
 ]
+# Google Cloud STT v2 (Chirp 3): OAuth2 token minting from a service account.
+google = [
+    "google-auth[requests]>=2.30",
+]
+# AI4Bharat IndicConformer local inference (large; not needed for API runs).
+indicconformer = [
+    "torch>=2.3",
+    "torchaudio>=2.3",
+    "transformers>=4.44",
+    "onnxruntime>=1.18",
+]
 dev = [
     "pytest>=8.0",
 ]

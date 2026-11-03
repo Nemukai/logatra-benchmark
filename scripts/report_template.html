@@ -7,8 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
-<script>(function(){var t=localStorage.getItem("nemukai-theme")||"light";document.documentElement.setAttribute("data-theme",t);})();</script>
+<script src="vendor/chart.umd.min.js"></script>
+<script>(function(){var t="light";try{t=localStorage.getItem("nemukai-theme")||"light"}catch(e){}document.documentElement.setAttribute("data-theme",t);})();</script>
+<noscript><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
 <style>
 :root{
   --ink900:#141210;--ink800:#262220;--ink700:#3B352E;--ink600:#524A3E;
@@ -88,12 +89,22 @@ h2{font-family:'Instrument Serif',serif;font-weight:400;font-size:30px;color:var
 .lbrow .who small{display:block;font-weight:400;color:var(--text-subtle);font-size:11.5px}
 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:9px;vertical-align:0}
 .accbar{position:relative;height:30px;display:flex;align-items:center;gap:12px}
-.accbar .bar{height:8px;border-radius:4px;flex:1;background:var(--track);overflow:hidden;position:relative}
+.accbar .bar{height:8px;border-radius:4px;flex:1;background:var(--track);position:relative}
 .accbar .fill{position:absolute;inset:0 auto 0 0;width:0;border-radius:4px;transition:width .8s cubic-bezier(.25,.8,.35,1)}
 .accbar b{font-family:'JetBrains Mono',monospace;font-weight:500;font-size:16px;color:var(--text-strong);min-width:62px;text-align:right}
 .cell{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--text-muted);text-align:right}
 .flag{font-size:10px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--momo400);border:.5px solid rgba(201,111,121,.4);border-radius:4px;padding:1px 6px;margin-left:8px;vertical-align:1px}
 .flag.note{color:var(--text-subtle);border-color:var(--hairline)}
+.accbar .val{min-width:96px;text-align:right;line-height:1.15}
+.accbar .val small{display:block;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text-subtle);font-weight:400}
+.accbar .ciband{position:absolute;top:-3px;bottom:-3px;border-left:1.5px solid var(--text-muted);border-right:1.5px solid var(--text-muted);opacity:.55}
+.lbrow .rank.tie{font-size:17px}
+.lbdiv{padding:14px 20px 10px;font-size:12.5px;color:var(--text-subtle);border-bottom:.5px solid var(--hairline);background:var(--head-bg)}
+.lbrow.contrib{opacity:.62}
+.lbrow.contrib .rank{font-size:15px}
+.lbrow.contrib .fill{filter:grayscale(.85)}
+.mx .v small{display:block;font-size:9.5px;font-weight:400;opacity:.75}
+.chartfail{font-size:12.5px;color:var(--text-subtle);padding:40px 0;text-align:center}
 /* matrix */
 .matrix{border:.5px solid var(--hairline);overflow-x:auto}
 .mx{display:grid;min-width:760px}
@@ -175,13 +186,13 @@ nav .links{align-items:center}
 <main class="wrap">
 <header class="hero">
   <h1>How well do speech APIs actually hear <em>India</em>?</h1>
-  <p>Seven speech-to-text engines, tested on the same audio: read speech in 12 Indian languages, Hinglish conversations, noisy phone calls, and fresh real-world recordings no model has trained on. Every test case is inspectable below, ground truth against output, word by word.</p>
+  <p>Seven speech-to-text engines, tested on the same audio: read speech in 12 Indian languages, Hinglish conversations, noisy phone calls, and fresh 2026 real-world recordings that are far less likely to be in any model's training data than public test sets. Every test case is inspectable below, ground truth against output, word by word.</p>
   <div class="statstrip" id="statstrip"></div>
 </header>
 
 <section id="leaderboard" class="reveal">
   <h2>Leaderboard</h2>
-  <p class="sub">Accuracy = words transcribed correctly, after normalizing away script choice (writing "start" vs "स्टार्ट" for the same spoken word is not an error). Computed on the exact same clips for every engine.</p>
+  <p class="sub">Accuracy = 1 − word error rate, word-weighted (every reference word counts once), after normalizing away script choice (writing "start" vs "स्टार्ट" for the same spoken word is not an error). Computed on the exact same clips for every engine. The bracket on each bar is the 95% bootstrap confidence interval; "=" marks engines whose gap to a better-ranked one is within that noise, so they share a rank.</p>
   <div class="toggle" role="tablist" id="splitToggle">
     <button class="on" data-split="heldout">real-world 2026 audio</button>
     <button data-split="public">standard datasets</button>
@@ -192,7 +203,7 @@ nav .links{align-items:center}
 
 <section id="matrix" class="reveal">
   <h2>Accuracy by language</h2>
-  <p class="sub">Average per-clip accuracy for each engine on each test type. Darker teal = better. This is the map of who to route where.</p>
+  <p class="sub">Word-weighted script-agnostic accuracy (1 − WER over all words in the cell, the same measure as the leaderboard) for each engine on each test type, over every clip that engine completed, so n (clips, shown under each value) differs between engines; hover a cell for its 95% CI. Cells with fewer than 30 clips are noisy. * = held-out score is an upper bound (the engine helped write those references). Darker teal = better.</p>
   <div class="matrix"><div class="mx" id="mx"></div></div>
 </section>
 
@@ -233,37 +244,50 @@ nav .links{align-items:center}
 <section id="method" class="reveal">
   <h2>Method, honestly</h2>
   <div class="grid2">
-    <div><h3>Two kinds of tests</h3><div class="note" style="margin:0"><b style="color:var(--sand)">Standard datasets</b> (FLEURS read speech, MUCS Hinglish, Gramvaani phone calls) are public; providers have almost certainly trained on them, so treat those scores as a flattering baseline. <b style="color:var(--sand)">Real-world 2026</b> is Creative-Commons YouTube audio published January–June 2026, after every model's training cutoff. Nobody could have memorized it. When the two disagree, trust the real-world number.</div></div>
-    <div><h3>Where ground truth comes from</h3><div class="note" style="margin:0">Standard datasets ship human transcripts. Real-world references come from multi-model consensus with a strict agreement gate; the 36 of 132 chunks that failed the automatic gate were adjudicated case by case (accept only on cross-model content agreement, every decision and rationale logged in the repo). Sarvam saarika, Gemini, and Whisper contributed consensus hypotheses, so their real-world scores are upper bounds (marked); the per-system exposure is quantified as self_ref_rate in the data. Saaras v3, gpt-audio, and Voxtral never saw the references: their scores are fully independent.</div></div>
-    <div><h3>The script problem</h3><div class="note" style="margin:0">Indian speech mixes languages mid-sentence, and engines legitimately disagree on script: "फॉन्ट साइज" and "font size" are the same spoken words. Headline accuracy romanizes both sides before comparing so script choice is not punished. The diff view still shows the raw outputs, so you can see script differences without being misled by them.</div></div>
+    <div><h3>Two kinds of tests</h3><div class="note" style="margin:0"><b style="color:var(--sand)">Standard datasets</b> (FLEURS read speech, MUCS Hinglish, Gramvaani phone calls) are public; providers have almost certainly trained on them, so treat those scores as a flattering baseline. <b style="color:var(--sand)">Real-world 2026</b> is Creative-Commons YouTube audio published January–June 2026, after the release of most engines tested here. Saaras v4 (released September 2026) postdates it and could in principle have trained on it, and we cannot verify any vendor's training data, so treat it as much less exposed than public test sets rather than guaranteed unseen. When the two disagree, trust the real-world number.</div></div>
+    <div><h3>Where ground truth comes from</h3><div class="note" style="margin:0">Standard datasets ship human transcripts. Real-world references come from multi-model consensus with a strict agreement gate; the 36 of 132 chunks that failed the automatic gate were adjudicated case by case (accept only on cross-model content agreement, every decision and rationale logged in the repo). Sarvam saarika, Gemini, and Whisper contributed consensus hypotheses, so on real-world audio they are shown unranked, below the line, with the share of clips whose reference is their own output (self_ref_rate) and their score on the remaining clips. Saaras v4, saaras v3, gpt-audio, and Voxtral never saw the references: only they are ranked there.</div></div>
+    <div><h3>The script problem</h3><div class="note" style="margin:0">Indian speech mixes languages mid-sentence, and engines legitimately disagree on script: "स्टार्ट" and "start" are the same spoken word, and some engines write Urdu speech in Devanagari or Odia speech in Devanagari. Headline accuracy romanizes both sides before comparing (every Indic script in the benchmark), so script choice is not punished. Urdu is an abjad that leaves short vowels unwritten, so any comparison involving Urdu script uses a shared consonant skeleton instead, which is more lenient. Strict, script-sensitive WER is reported in the data and the README. The diff view still shows the raw outputs.</div></div>
     <div><h3>Models as run</h3><div class="note" style="margin:0" id="modelnote"></div></div>
   </div>
 </section>
 </main>
-<footer class="foot"><div>logatra benchmark · nemukai · 2026</div><p>Raw per-call responses are cached and the whole report regenerates offline. Accuracy floors at 0% (a looping engine cannot score negative, it just fails).</p></footer>
+<footer class="foot"><div>logatra benchmark · nemukai · 2026</div><p>Raw per-call responses are cached and the whole report regenerates offline. Accuracy floors at 0% (a looping engine cannot score negative, it just fails). Confidence intervals: 95% percentile bootstrap, resampling source videos for real-world audio and clips for standard datasets.</p></footer>
 
+<script>
+// Reveal on scroll, in its own script so nothing below can leave the page blank.
+(function(){
+  const els=[...document.querySelectorAll(".reveal")];
+  const showAll=()=>els.forEach(e=>e.classList.add("in"));
+  window.addEventListener("error",showAll);
+  if(!("IntersectionObserver" in window)){showAll();return}
+  try{
+    const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.06});
+    els.forEach(el=>io.observe(el));
+  }catch(e){showAll()}
+  setTimeout(showAll,4000);
+})();
+</script>
 <script src="cases.js"></script>
 <script>
 const DATA = /*__DATA__*/null;
 const P = ["sarvam-saaras-v4","sarvam-saaras","sarvam","whisper","gemini","voxtral","gpt-audio"];
 const PCOLOR = {"sarvam-saaras-v4":"#6DC3AD","sarvam-saaras":"#42AD94",sarvam:"#3EA0B2",whisper:"#8670AA",gemini:"#E89A48",voxtral:"#C96F79","gpt-audio":"#619C4E"};
 const PLABEL = {"sarvam-saaras-v4":"Sarvam saaras v4","sarvam-saaras":"Sarvam saaras v3",sarvam:"Sarvam saarika v2.5",whisper:"OpenAI Whisper",gemini:"Gemini 3.5 Flash",voxtral:"Mistral Voxtral","gpt-audio":"OpenAI gpt-audio"};
-const PSUB = {"sarvam-saaras-v4":"Sarvam's latest, added Sep 2026","sarvam-saaras":"what Logatra runs in production",sarvam:"previous Sarvam generation",whisper:"whisper-1 API",gemini:"via OpenRouter, minimal reasoning",voxtral:"voxtral-small-24b","gpt-audio":"OpenAI audio chat model"};
+const PSUB = {"sarvam-saaras-v4":"Sarvam's latest (Sep 2026) · Logatra's production engine since 25 Oct 2026","sarvam-saaras":"previous saaras · Logatra's engine until Oct 2026",sarvam:"previous Sarvam generation",whisper:"whisper-1 API",gemini:"via OpenRouter, minimal reasoning",voxtral:"voxtral-small-24b","gpt-audio":"OpenAI audio chat model"};
 const DSLABEL = {fleurs:"Read speech · FLEURS",mucs_hinglish:"Hinglish · MUCS",gramvaani:"Phone calls · Gramvaani",heldout_yt:"Real-world · fresh YouTube"};
 const cssVar=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-function applyChartDefaults(){Chart.defaults.color=cssVar("--chart-text");Chart.defaults.borderColor=cssVar("--chart-grid")}
-applyChartDefaults();Chart.defaults.font.family="'Plus Jakarta Sans',sans-serif";Chart.defaults.font.size=11.5;
+const HAS_CHART=typeof window.Chart==="function";
+function applyChartDefaults(){if(!HAS_CHART)return;Chart.defaults.color=cssVar("--chart-text");Chart.defaults.borderColor=cssVar("--chart-grid")}
+safe("chart defaults",()=>{applyChartDefaults();if(HAS_CHART){Chart.defaults.font.family="'Plus Jakarta Sans',sans-serif";Chart.defaults.font.size=11.5}});
 const CASES = window.LOGATRA_CASES||[];
 const g=(o,k)=>o[k]||null;
 const acc=w=>w==null?null:Math.max(0,(1-w)*100);
 const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-// reveal on scroll
-const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.06});
-document.querySelectorAll(".reveal").forEach(el=>io.observe(el));
+function safe(name,fn){try{fn()}catch(e){console.warn("logatra report: "+name+" failed",e)}}
 
 // stat strip with count-up
-(function(){
+safe("stat strip",function(){
   const langs=new Set(CASES.map(c=>c.langName));
   const mins=Math.round(CASES.reduce((a,c)=>a+1,0)&&DATA?Object.values(DATA.by_provider).reduce((m,v)=>Math.max(m,v.audio_minutes),0):0);
   const items=[[CASES.length,"test cases you can inspect"],[langs.size,"languages & test types"],[P.length,"engines compared"],[CASES.filter(c=>c.real).length,"fresh 2026 real-world clips"],[mins,"minutes of audio per engine"]];
@@ -274,43 +298,69 @@ document.querySelectorAll(".reveal").forEach(el=>io.observe(el));
     const t0=performance.now();
     (function tick(t){const k=Math.min(1,(t-t0)/900);b.textContent=Math.round(target*(1-Math.pow(1-k,3))).toLocaleString();if(k<1)requestAnimationFrame(tick)})(t0);
   });
-})();
+});
 
 // leaderboard
-const HINTS={heldout:"Fresh Creative-Commons audio published Jan–Jun 2026, after every model's training cutoff. The honest number.",
+const HINTS={heldout:"Fresh Creative-Commons audio published Jan–Jun 2026: much less likely to be in training data than public sets (saaras v4, released Sep 2026, postdates it). Only engines that did not help write the references are ranked; contributors are listed below the line, unranked.",
   public:"FLEURS + MUCS + Gramvaani. Public data that models have likely seen in training; a flattering baseline."};
+const pct=v=>(v*100).toFixed(1);
+// Rank with ties: 1 + number of engines whose advantage is significant
+// (95% bootstrap CI on the gap excludes 0). Equal ranks are shown as "=k".
+function tieRanks(list,split){
+  const pw=(DATA.pairwise_comparable||{})[split]||{};
+  const better=(a,b)=>{const g=pw[a+"|"+b];return g?g.wer_sa_ci[0]>0:false}; // b significantly better than a
+  const rk={};list.forEach(a=>{rk[a]=1+list.filter(b=>b!==a&&better(a,b)).length});
+  return rk;
+}
+function boardRow(r,label,cls,extra){
+  const div=document.createElement("div");div.className="lbrow"+cls;
+  const ci=r.d.wer_sa_ci?[acc(r.d.wer_sa_ci[1]),acc(r.d.wer_sa_ci[0])]:null;
+  div.innerHTML=`<div class="rank${String(label).startsWith("=")?" tie":""}"${String(label).startsWith("=")?' title="statistically tied: the 95% CI on the gap to an engine with the same rank includes 0"':""}>${label}</div>
+    <div class="who"><span class="dot" style="background:${PCOLOR[r.p]}"></span>${PLABEL[r.p]}${r.flags.join("")}<small>${PSUB[r.p]}${extra||""}</small></div>
+    <div class="accbar"><div class="bar"><div class="fill" style="background:${PCOLOR[r.p]}"></div>${ci?`<div class="ciband" style="left:${ci[0]}%;width:${Math.max(.4,ci[1]-ci[0])}%"></div>`:""}</div><div class="val"><b>${r.acc.toFixed(1)}%</b>${ci?`<small title="95% bootstrap confidence interval">${ci[0].toFixed(1)}–${ci[1].toFixed(1)}</small>`:""}</div></div>
+    <div class="cell" title="median seconds to process one clip">${r.d.latency_median_s==null?"–":r.d.latency_median_s.toFixed(1)+" s/clip"}</div>
+    <div class="cell" title="cost per hour of audio">${r.d.cost_usd_per_hour==null?"–":"$"+r.d.cost_usd_per_hour.toFixed(2)+"/hr"}</div>`;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{div.querySelector(".fill").style.width=r.acc+"%"}));
+  return div;
+}
 function renderBoard(split){
-  document.getElementById("splitHint").textContent=HINTS[split]+(DATA.comparable_counts[split]?` Same ${DATA.comparable_counts[split].toLocaleString()} clips for every engine.`:"");
+  const n=DATA.comparable_counts[split],st=(DATA.comparable_stats||{})[split];
+  document.getElementById("splitHint").textContent=HINTS[split]+(n?` Same ${n.toLocaleString()} clips for every engine`+(st?` (${st.n_clusters} ${st.resampling_unit==="source video"?"source videos":"clips"} resampled for the CIs).`:"."):"");
   const el=document.getElementById("board");el.innerHTML="";
   const src=DATA.by_provider_comparable&&Object.keys(DATA.by_provider_comparable).length?DATA.by_provider_comparable:DATA.by_provider;
   const rows=P.map(p=>({p,d:g(src,p+"|"+split)})).filter(r=>r.d&&r.d.samples>0)
-    .map(r=>({...r,acc:acc(r.d.wer_script_agnostic)})).sort((a,b)=>b.acc-a.acc);
-  rows.forEach((r,i)=>{
-    const div=document.createElement("div");div.className="lbrow"+(i===0?" first":"");
-    const flags=[];
-    if(split==="heldout"&&DATA.silver_caveat_providers.includes(r.p))flags.push('<span class="flag note" title="helped create the reference transcripts; its score is an upper bound">upper bound</span>');
-    if(r.p==="voxtral")flags.push('<span class="flag" title="frequently repeats phrases endlessly and translates Hindi to English">loops & translates</span>');
-    div.innerHTML=`<div class="rank">${i===0?"①":i+1}</div>
-      <div class="who"><span class="dot" style="background:${PCOLOR[r.p]}"></span>${PLABEL[r.p]}${flags.join("")}<small>${PSUB[r.p]}</small></div>
-      <div class="accbar"><div class="bar"><div class="fill" style="background:${PCOLOR[r.p]}"></div></div><b>${r.acc.toFixed(1)}%</b></div>
-      <div class="cell" title="median seconds to process one clip">${r.d.latency_median_s==null?"–":r.d.latency_median_s.toFixed(1)+" s/clip"}</div>
-      <div class="cell" title="cost per hour of audio">${r.d.cost_usd_per_hour==null?"–":"$"+r.d.cost_usd_per_hour.toFixed(2)+"/hr"}</div>`;
-    el.appendChild(div);
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{div.querySelector(".fill").style.width=(reduced?r.acc:r.acc)+"%"}));
-  });
+    .map(r=>({...r,acc:acc(r.d.wer_script_agnostic),flags:[]})).sort((a,b)=>b.acc-a.acc);
+  const contrib=p=>split==="heldout"&&DATA.silver_caveat_providers.includes(p);
+  rows.forEach(r=>{if(r.p==="voxtral")r.flags.push('<span class="flag" title="frequently repeats phrases endlessly and translates Hindi to English">loops & translates</span>')});
+  const ranked=rows.filter(r=>!contrib(r.p)),unranked=rows.filter(r=>contrib(r.p));
+  const rk=tieRanks(ranked.map(r=>r.p),split);
+  const counts={};ranked.forEach(r=>counts[rk[r.p]]=(counts[rk[r.p]]||0)+1);
+  ranked.forEach(r=>{const k=rk[r.p];const label=counts[k]>1?"="+k:(k===1?"①":k);
+    el.appendChild(boardRow(r,label,k===1?" first":""))});
+  if(unranked.length){
+    const dv=document.createElement("div");dv.className="lbdiv";
+    dv.textContent="Not ranked on real-world audio: these engines helped write the reference transcripts, so part of their score is measured against their own output.";
+    el.appendChild(dv);
+    unranked.forEach(r=>{
+      const ns=g(DATA.by_provider_comparable_nonself||{},r.p+"|"+split);
+      r.flags.push(`<span class="flag note" title="share of real-world clips whose reference is this engine's own output">own output is the reference on ${Math.round(r.d.self_ref_rate*100)}% of clips</span>`);
+      const extra=ns?` · on the ${ns.samples} clips where it is not the reference: ${acc(ns.wer_script_agnostic).toFixed(1)}%`+(ns.wer_sa_ci?` (${acc(ns.wer_sa_ci[1]).toFixed(1)}–${acc(ns.wer_sa_ci[0]).toFixed(1)})`:""):"";
+      el.appendChild(boardRow(r,"–"," contrib",extra));
+    });
+  }
 }
 document.querySelectorAll("#splitToggle button").forEach(b=>b.addEventListener("click",()=>{
   document.querySelectorAll("#splitToggle button").forEach(x=>x.classList.remove("on"));
-  b.classList.add("on");renderBoard(b.dataset.split)}));
-renderBoard("heldout");
+  b.classList.add("on");safe("leaderboard",()=>renderBoard(b.dataset.split))}));
+safe("leaderboard",()=>renderBoard("heldout"));
 
-// language x engine matrix from per-case data
+// language x engine matrix: word-weighted script-agnostic accuracy per cell
+const LANG={as:"Assamese",bn:"Bengali",gu:"Gujarati",hi:"Hindi",kn:"Kannada",ml:"Malayalam",mr:"Marathi",or:"Odia",pa:"Punjabi",ta:"Tamil",te:"Telugu",ur:"Urdu"};
+const CELLNAME=c=>c==="mucs_hinglish"?"Hinglish (conversations)":c==="gramvaani"?"Hindi (phone calls)":c==="heldout_yt"?"Real-world Hinglish (2026)":c.startsWith("fleurs:")?(LANG[c.slice(7)]||c.slice(7))+" (read)":c;
 function renderMatrix(){
-  const rowKey=c=>c.ds==="mucs_hinglish"?"Hinglish (conversations)":c.ds==="gramvaani"?"Hindi (phone calls)":c.real?"Real-world Hinglish (2026)":c.langName+" (read)";
-  const agg={};
-  CASES.forEach(c=>{const k=rowKey(c);agg[k]=agg[k]||{};
-    P.forEach(p=>{const h=c.p[p];if(!h||h.as_==null)return;(agg[k][p]=agg[k][p]||[]).push(h.as_)})});
-  const rows=Object.keys(agg).sort((a,b)=>a.localeCompare(b));
+  const cells=DATA.by_provider_cell||{};
+  const names=[...new Set(Object.keys(cells).map(k=>k.split("|")[1]))];
+  const rows=names.map(c=>[c,CELLNAME(c)]).sort((a,b)=>a[1].localeCompare(b[1]));
   const mx=document.getElementById("mx");mx.innerHTML="";
   mx.style.gridTemplateColumns=`200px repeat(${P.length},1fr)`;
   const low=cssVar("--mx-low").split(",").map(Number),lowText=cssVar("--mx-text-low");
@@ -321,18 +371,21 @@ function renderMatrix(){
     const mix=(a,b)=>Math.round(a+(b-a)*t);
     return[`rgb(${mix(low[0],31)},${mix(low[1],134)},${mix(low[2],154)})`, t>.55?"#F2EBDD":lowText];
   };
-  rows.forEach(rk=>{
-    mx.insertAdjacentHTML("beforeend",`<div class="rowh">${rk}</div>`+P.map(p=>{
-      const arr=agg[rk][p];const v=arr?arr.reduce((a,x)=>a+x,0)/arr.length:null;
+  rows.forEach(([ck,label])=>{
+    mx.insertAdjacentHTML("beforeend",`<div class="rowh">${label}</div>`+P.map(p=>{
+      const d=cells[p+"|"+ck];const v=d?acc(d.wer_script_agnostic):null;
+      const ub=ck==="heldout_yt"&&DATA.silver_caveat_providers.includes(p)?"*":"";
+      const tip=d?`${PLABEL[p]} · ${label}: ${v.toFixed(1)}%${d.wer_sa_ci?` (95% CI ${acc(d.wer_sa_ci[1]).toFixed(1)}–${acc(d.wer_sa_ci[0]).toFixed(1)})`:""}, n=${d.samples} clips`:"";
       const[bg,fg]=shade(v);
-      return`<div class="v" style="background:${bg};color:${fg}">${v==null?"–":v.toFixed(0)+"%"}</div>`}).join(""));
+      return`<div class="v" style="background:${bg};color:${fg}" title="${tip}">${v==null?"–":`<span>${v.toFixed(0)}%${ub}<small>n=${d.samples}</small></span>`}</div>`}).join(""));
   });
 }
-renderMatrix();
+safe("matrix",renderMatrix);
 
 // charts
 let CHARTS=[];
 function renderCharts(){
+  if(!HAS_CHART){document.querySelectorAll(".chartbox").forEach(b=>{b.innerHTML='<div class="chartfail">Chart library failed to load; the numbers are in the leaderboard and matrix above.</div>'});return}
   CHARTS.forEach(c=>c.destroy());CHARTS=[];applyChartDefaults();const grid=cssVar("--chart-grid");
   const ds=Object.keys(DSLABEL).filter(d=>P.some(p=>g(DATA.by_provider_dataset,p+"|"+d)));
   CHARTS.push(new Chart(cDataset,{type:"bar",data:{labels:ds.map(d=>DSLABEL[d]),
@@ -353,10 +406,10 @@ function renderCharts(){
     datasets:[{label:"real-time factor",data:provs.map(p=>g(DATA.by_provider,p+"|public").rtf_median),backgroundColor:provs.map(p=>PCOLOR[p]+"99"),borderRadius:3}]},
     options:{maintainAspectRatio:false,scales:{y:{title:{display:true,text:"processing s / audio s"},grid:{color:grid}},x:{grid:{display:false},ticks:{maxRotation:30}}},plugins:{legend:{display:false}}}}));
 }
-renderCharts();
+safe("charts",renderCharts);
 
 // theme toggle (shares the nemukai-theme key with nemukai.com)
-(function(){
+safe("theme toggle",function(){
   const SUN='<circle cx="12" cy="12" r="5" fill="currentColor" stroke="none"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
   const MOON='<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
   const btn=document.getElementById("themeToggle"),icon=document.getElementById("themeIcon"),label=document.getElementById("themeLabel");
@@ -364,9 +417,9 @@ renderCharts();
     icon.innerHTML=dark?SUN:MOON;label.textContent=dark?"Sunny":"Shade";btn.setAttribute("aria-label",dark?"Switch to Sunny mode":"Switch to Shade mode")}
   paint();
   btn.addEventListener("click",()=>{const next=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";
-    document.documentElement.setAttribute("data-theme",next);localStorage.setItem("nemukai-theme",next);
-    paint();renderMatrix();renderCharts()});
-})();
+    document.documentElement.setAttribute("data-theme",next);try{localStorage.setItem("nemukai-theme",next)}catch(e){}
+    paint();safe("matrix",renderMatrix);safe("charts",renderCharts)});
+});
 
 // ---------- explorer ----------
 const DIGITS={"०":"0","१":"1","२":"2","३":"3","४":"4","५":"5","६":"6","७":"7","८":"8","९":"9"};
@@ -460,10 +513,10 @@ function renderCases(){
 let qt;fQ.addEventListener("input",()=>{clearTimeout(qt);qt=setTimeout(()=>{page=0;renderCases()},250)});
 document.getElementById("pgPrev").addEventListener("click",()=>{page--;renderCases()});
 document.getElementById("pgNext").addEventListener("click",()=>{page++;renderCases();document.getElementById("explorer").scrollIntoView({behavior:reduced?"auto":"smooth"})});
-renderCases();
+safe("explorer",renderCases);
 
 document.getElementById("modelnote").textContent =
-  "sarvam saaras:v4 (mode=transcribe, added Sep 2026) · sarvam saaras:v3 (mode=transcribe) · sarvam saarika:v2.5 · openai whisper-1 (auto-detect fallback where hints are unsupported) · google/gemini-3.5-flash via OpenRouter at minimal reasoning · mistralai/voxtral-small-24b-2507 · openai/gpt-audio. Costs from per-call billing (OpenRouter) or list price (Sarvam ₹0.75/min, Whisper $0.006/min). Leaderboard uses only clips every engine completed.";
+  "sarvam saaras:v4 (mode=transcribe, released Sep 2026; Logatra's production engine since 25 Oct 2026) · sarvam saaras:v3 (mode=transcribe) · sarvam saarika:v2.5 · openai whisper-1 (auto-detect fallback where hints are unsupported) · google/gemini-3.5-flash via OpenRouter at minimal reasoning · mistralai/voxtral-small-24b-2507 · openai/gpt-audio. Costs from per-call billing (OpenRouter) or list price (Sarvam ₹0.75/min, Whisper $0.006/min). Leaderboard uses only clips every engine completed.";
 </script>
 </body>
 </html>

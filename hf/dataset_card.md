@@ -30,7 +30,7 @@ tags:
 pretty_name: Logatra Benchmark
 size_categories:
   - 1K<n<10K
-thumbnail: https://huggingface.co/datasets/CooledNik/logatra-benchmark/resolve/main/assets/logatra-logo.png
+thumbnail: https://raw.githubusercontent.com/Nemukai/logatra-benchmark/main/hf/assets/logatra-logo.png
 configs:
   - config_name: heldout
     data_files: manifests/heldout_yt.silver.jsonl
@@ -40,14 +40,17 @@ configs:
     data_files: manifests/mucs2021_hi_en.jsonl
 ---
 
-![Logatra Benchmark: speech-to-text on Indian languages and Hinglish](https://huggingface.co/datasets/CooledNik/logatra-benchmark/resolve/main/assets/hero.png)
+![Logatra Benchmark: speech-to-text on Indian languages and Hinglish](https://raw.githubusercontent.com/Nemukai/logatra-benchmark/main/hf/assets/hero.png)
 
 # Logatra Benchmark
 
 An independent speech-to-text benchmark for Indian languages and Hinglish, built by
 [Nemukai](https://nemukai.com), the team behind [Logatra](https://logatra.com).
 Seven commercial STT engines are scored on a public split and on a fresh held-out
-split of 2026 Creative Commons audio that no model could have trained on.
+split of 2026 Creative Commons audio, published January to June 2026. That
+postdates the release of most engines tested, but not saaras v4 (September 2026),
+and no vendor's training data can be verified, so treat it as far less exposed than
+public test sets rather than guaranteed unseen.
 
 This repository holds the audio, manifests and every raw provider response, so the
 whole leaderboard can be re-scored offline without an API key.
@@ -64,7 +67,7 @@ whole leaderboard can be re-scored offline without an API key.
 Every engine on the same clips: 324 from the public split and all 132 held-out
 chunks. Lower is better.
 
-![Word error rate on the public split and the held-out 2026 audio](https://huggingface.co/datasets/CooledNik/logatra-benchmark/resolve/main/assets/leaderboard.png)
+![Word error rate on the public split and the held-out 2026 audio](https://raw.githubusercontent.com/Nemukai/logatra-benchmark/main/hf/assets/leaderboard.png)
 
 | Engine | Public WER | Held-out WER | Held-out median | US$ per audio hour |
 |---|---|---|---|---|
@@ -91,9 +94,9 @@ What stands out:
 - **Whisper collapses on conversational Hindi**: usable on read speech, close to
   unusable on real interview audio.
 
-![Held-out word error rate against price per audio hour](https://huggingface.co/datasets/CooledNik/logatra-benchmark/resolve/main/assets/cost-vs-accuracy.png)
+![Held-out word error rate against price per audio hour](https://raw.githubusercontent.com/Nemukai/logatra-benchmark/main/hf/assets/cost-vs-accuracy.png)
 
-![Script-agnostic word error rate by language and engine](https://huggingface.co/datasets/CooledNik/logatra-benchmark/resolve/main/assets/languages.png)
+![Script-agnostic word error rate by language and engine](https://raw.githubusercontent.com/Nemukai/logatra-benchmark/main/hf/assets/languages.png)
 
 ## What is here
 
