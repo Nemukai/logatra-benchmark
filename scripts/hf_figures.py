@@ -165,10 +165,12 @@ def cost_vs_accuracy(d: dict) -> str:
     body += text(px + pw / 2, py + ph + 48, "US$ per audio hour", 13, MUTED, anchor="middle")
     body += text(px - 70, py + ph / 2, "Held-out WER", 13, MUTED, anchor="middle",
                  extra=f'transform="rotate(-90 {px - 70} {py + ph / 2})"')
-    # (dx, label baseline offset from the saaras:v3 point or None for own point)
-    placement = {"sarvam-saaras": (70, 0), "sarvam-saaras-v4": (70, -30), "sarvam": (70, 30),
-                 "gemini": (-14, None), "gpt-audio": (-14, None), "whisper": (14, None), "voxtral": (14, None)}
+    # Engines clustered near the same price get callout labels stacked in a
+    # column to the right of the cluster; outliers are labelled beside the point.
+    callout = {"sarvam-saaras-v4": -45, "sarvam-saaras": -15, "gemini": 15, "sarvam": 45}
+    beside = {"gpt-audio": -14, "whisper": 14, "voxtral": 14}
     anchor_y = py + ph - c["sarvam-saaras|heldout"]["wer"] / ymax * ph
+    label_x = px + 0.58 / xmax * pw
     for key, name in SYSTEMS:
         m = c[f"{key}|heldout"]
         cx = px + m["cost_usd_per_hour"] / xmax * pw
@@ -176,16 +178,17 @@ def cost_vs_accuracy(d: dict) -> str:
         self_ref = m["self_ref_rate"] > 0.01
         fill = SAND if self_ref else KAI
         body += f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="7" fill="{fill}" stroke="{KAI}" stroke-width="2.5"/>'
-        dx, off = placement[key]
-        anchor = "start" if dx > 0 else "end"
-        ly = cy + 5 if off is None else anchor_y + off + 5
-        if off is not None:
-            body += (f'<polyline points="{cx + 10:.1f},{cy:.1f} {cx + dx - 26:.1f},{ly - 5:.1f} {cx + dx - 6:.1f},{ly - 5:.1f}" '
+        label = f"{name}  {pct(m['wer'])}{' *' if self_ref else ''}"
+        if key in callout:
+            ly = anchor_y + callout[key]
+            body += (f'<polyline points="{cx + 9:.1f},{cy:.1f} {label_x - 30:.1f},{ly:.1f} {label_x - 6:.1f},{ly:.1f}" '
                      f'fill="none" stroke="{SUBTLE}" stroke-width="1"/>')
-        body += text(cx + dx, ly, f"{name}  {pct(m['wer'])}{' *' if self_ref else ''}", 13, INK2,
-                     anchor=anchor)
-    body += footer(w, h, "Hollow points contributed to the held-out references (scores are upper bounds). "
-                         "Prices are list prices at run time.")
+            body += text(label_x, ly + 5, label, 13, INK2, anchor="start")
+        else:
+            dx = beside[key]
+            body += text(cx + dx, cy + 5, label, 13, INK2, anchor="start" if dx > 0 else "end")
+    body += footer(w, h, "Hollow = contributed to held-out refs (upper bound). "
+                         "List prices as of 3 Nov 2026.")
     return svg(w, h, body)
 
 
