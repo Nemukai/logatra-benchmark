@@ -56,7 +56,9 @@ already fetched are skipped (`blocked`/`error` videos are retried). Use
      `automatic_captions`) whose track language matches the target.
    - Spoken-language signal: YouTube's original-language ASR track (`xx-orig`
      in `automatic_captions`, only its *name* is read) or `info["language"]`
-     must match, which rejects translated caption tracks.
+     must match, which rejects translated caption tracks. When no signal is
+     available, videos with manual tracks in >= 3 languages are rejected as
+     probable translation sets.
    - Caption text: >= 60% of letters in the expected script (Hinglish may be
      Devanagari or Latin; romanised tracks need >= 8% Hindi function words);
      >= 10 speech cues; <= 30% music cues; cue coverage >= 35% of the video;

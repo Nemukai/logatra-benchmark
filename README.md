@@ -32,34 +32,45 @@ been run yet (see Roadmap).
 
 ## Results (comparable intersection)
 
-Strict WER, word-weighted; `sa` = script-agnostic WER (fair to code-mix
-script choice); `med` = median per-sample WER (robust to repetition loops).
+Strict WER, word-weighted, with 95% bootstrap CIs (public: resampling clips;
+held-out: resampling the 11 source videos, so held-out intervals are wide).
+`sa` = script-agnostic WER (fair to code-mix script choice); `med` = median
+per-sample WER (robust to repetition loops).
 
-| System | public WER | public med | held-out WER | held-out med | $/audio-hour |
-|---|---|---|---|---|---|
-| sarvam-saaras-v4 | 0.261 | 0.217 | 0.258 | 0.134 | ~0.54 |
-| gemini | 0.265 | 0.233 | 0.222 * | 0.117 * | ~0.43 |
-| sarvam-saaras | 0.323 | 0.286 | 0.228 | 0.106 | ~0.54 |
-| sarvam | 0.373 | 0.318 | 0.197 * | 0.000 * | ~0.54 |
-| gpt-audio | 0.535 | 0.417 | 0.285 | 0.198 | ~1.39 |
-| whisper | 0.783 | 0.793 | 0.476 * | 0.390 * | 0.36 |
-| voxtral | 2.938 | 0.833 | 0.720 | 0.266 | ~0.36 |
+| System | public WER [95% CI] | public sa | held-out WER [95% CI] | held-out sa | held-out med | $/audio-hour |
+|---|---|---|---|---|---|---|
+| sarvam-saaras-v4 | 0.261 [0.237, 0.286] | 0.238 | 0.258 [0.150, 0.377] | 0.238 | 0.134 | ~0.35 |
+| gemini | 0.265 [0.243, 0.288] | 0.246 | 0.222 * [0.136, 0.310] | 0.205 * | 0.117 * | ~0.43 |
+| sarvam-saaras | 0.323 [0.293, 0.353] | 0.293 | 0.228 [0.121, 0.348] | 0.210 | 0.106 | ~0.35 |
+| sarvam | 0.373 [0.340, 0.407] | 0.331 | 0.197 * [0.087, 0.319] | 0.181 * | 0.000 * | ~0.35 |
+| gpt-audio | 0.535 [0.482, 0.599] | 0.512 | 0.285 [0.197, 0.394] | 0.270 | 0.198 | ~1.39 |
+| whisper | 0.783 [0.746, 0.825] | 0.706 | 0.476 * [0.398, 0.580] | 0.458 * | 0.390 * | 0.36 |
+| voxtral | 2.938 [1.471, 4.946] | 2.901 | 0.720 [0.316, 1.525] | 0.702 | 0.266 | ~0.36 |
 
-`*` = this system contributed to the held-out references (see below); treat
-its held-out score as an upper bound, not a clean measurement. The per-system
-`self_ref_rate` in `report/data.json` quantifies exactly how much
-(sarvam 58%, gemini 38%, whisper 5% of held-out rows use that system's own
-output as the reference).
+`*` = this system contributed to the held-out references (see below). Its
+held-out score is an upper bound, not a clean measurement, so the page does
+not rank it on held-out: contributors are listed unranked with their
+`self_ref_rate` (sarvam 58%, gemini 38%, whisper 5% of held-out rows use that
+system's own output as the reference) and their score on the remaining rows
+(`by_provider_comparable_nonself` in `report/data.json`; e.g. saarika's
+held-out sa WER is 0.408 on the 56 rows it did not write, against 0.181
+overall).
 
-Three findings worth calling out:
+Absolute held-out CIs are wide because the 132 chunks come from only 11
+videos. Paired gaps on the same clips are much tighter (all in
+`report/data.json` under `pairwise_comparable` and `gaps_vs_top`).
 
-- **Saaras v4 (added September 2026) is the strongest engine on the public
-  split and the fastest of all seven** (0.6 s median per clip), but on the
-  fresh held-out audio it trails saaras v3 by about three points of
-  script-agnostic WER (23.8% vs 21.0%). Both are fully independent of the
-  held-out references, so that gap is a clean measurement: on unseen 2026
-  conversational Hindi, v3 still edges v4.
+Findings worth calling out:
 
+- **On the public split, saaras v4 and Gemini are statistically tied**
+  (strict WER 0.261 vs 0.265; gap +0.3 pts for Gemini, 95% CI
+  [-1.5, +2.0]). Saaras v4 is the fastest of the seven (0.6 s median per
+  clip) and clearly ahead of saaras v3 (gap -6.2 pts, CI [-8.5, -3.9]).
+- **On fresh held-out audio, saaras v3 edges v4**: script-agnostic WER 21.0%
+  vs 23.8%, a gap of +2.8 pts for v4 with paired cluster-bootstrap CI
+  [+1.2, +4.4]. Neither wrote the held-out references, so this is a clean
+  measurement, though small. Among non-contributors, gpt-audio cannot be
+  separated from either Sarvam model (gap to v3 +6.0 pts, CI [-2.5, +13.9]).
 - **Voxtral falls into repetition loops** on Indic audio (46 of 896 outputs
   are runaway repetitions), which is why its mean WER exceeds 100% while its
   median is far lower. The explorer shows the raw cases.
@@ -216,7 +227,7 @@ tests/                pure-python tests: normalization, script-agnostic WER, sco
 ## Disclosure
 
 This benchmark is built by [Nemukai](https://nemukai.com). Our product [Logatra](https://logatra.com)
-runs Sarvam saaras:v4 in production (since October 2026, even though v3 leads on
+runs Sarvam saaras:v4 in production (since 25 October 2026, even though v3 leads on
 the held-out split here); the benchmark exists because we needed to
 choose a provider and did not trust vendor-reported numbers. That is a
 conflict of interest you should know about. Mitigations: every raw provider

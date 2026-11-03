@@ -69,25 +69,31 @@ chunks. Lower is better.
 
 ![Word error rate on the public split and the held-out 2026 audio](https://raw.githubusercontent.com/Nemukai/logatra-benchmark/main/hf/assets/leaderboard.png)
 
-| Engine | Public WER | Held-out WER | Held-out median | US$ per audio hour |
+| Engine | Public WER [95% CI] | Held-out WER [95% CI] | Held-out median | US$ per audio hour |
 |---|---|---|---|---|
-| Sarvam saaras:v3 | 32.3% | 22.8% | 10.6% | ~0.54 |
-| Sarvam saaras:v4 | 26.1% | 25.8% | 13.4% | ~0.54 |
-| Gemini 3.5 Flash | 26.5% | 22.2% \* | 11.7% \* | ~0.43 |
-| Sarvam saarika:v2.5 | 37.3% | 19.7% \* | 0.0% \* | ~0.54 |
-| OpenAI gpt-audio | 53.5% | 28.5% | 19.8% | ~1.39 |
-| OpenAI whisper-1 | 78.3% | 47.6% \* | 39.0% \* | 0.36 |
-| Mistral Voxtral Small 24B | 293.8% | 72.0% | 26.6% | ~0.36 |
+| Sarvam saaras:v3 | 32.3% [29.3, 35.3] | 22.8% [12.1, 34.8] | 10.6% | ~0.35 |
+| Sarvam saaras:v4 | 26.1% [23.7, 28.6] | 25.8% [15.0, 37.7] | 13.4% | ~0.35 |
+| Gemini 3.5 Flash | 26.5% [24.3, 28.8] | 22.2% \* | 11.7% \* | ~0.43 |
+| Sarvam saarika:v2.5 | 37.3% [34.0, 40.7] | 19.7% \* | 0.0% \* | ~0.35 |
+| OpenAI gpt-audio | 53.5% [48.2, 59.9] | 28.5% [19.7, 39.4] | 19.8% | ~1.39 |
+| OpenAI whisper-1 | 78.3% [74.6, 82.5] | 47.6% \* | 39.0% \* | 0.36 |
+| Mistral Voxtral Small 24B | 293.8% [147, 495] | 72.0% [31.6, 152.5] | 26.6% | ~0.36 |
+
+Word-weighted WER; 95% bootstrap confidence intervals resample clips on the public
+split and whole source videos on the held-out split (11 videos, hence the wide
+held-out intervals; paired gaps between engines are much tighter).
 
 \* Contributed to the silver held-out references, so its held-out score is an upper
-bound (see below).
+bound and it is not ranked on held-out (see below).
 
 What stands out:
 
-- **Saaras v4 is the strongest engine on the public split and the fastest of the
-  seven** (0.6 s median per clip), but on fresh held-out audio saaras v3 still
-  edges it by about three points. Neither wrote the held-out references, so that
-  gap is a clean measurement.
+- **Saaras v4 and Gemini are statistically tied on the public split** (26.1% vs
+  26.5%; 95% CI on the gap -1.5 to +2.0 points). Saaras v4 is the fastest of the
+  seven (0.6 s median per clip).
+- **On fresh held-out audio saaras v3 edges v4** by 2.8 points of script-agnostic
+  WER (paired CI +1.2 to +4.4, resampling videos). Neither wrote the held-out
+  references, so that gap is a clean, if small, measurement.
 - **Voxtral falls into repetition loops** on Indic audio: 46 of 896 outputs are
   runaway repetitions, which is why its mean WER is above 100% while its median is
   far lower.
@@ -124,7 +130,8 @@ path = snapshot_download("CooledNik/logatra-benchmark", repo_type="dataset")
 
 ## How the held-out split was made
 
-Eleven Hindi and Hinglish YouTube videos published between January and June 2026,
+Eleven Hindi and Hinglish YouTube videos published between January and June 2026
+(before saaras v4's September 2026 release, so not guaranteed unseen by it),
 each released by its uploader under the Creative Commons Attribution license, were
 cut into 132 chunks of about 22 seconds. They are long-form interviews, podcasts and
 talks: conversational speech with code-mixing, the kind of audio
@@ -175,7 +182,7 @@ and it will be pulled promptly.
 [Logatra](https://logatra.com) is Nemukai's transcription product, so we have a
 stake in these numbers. The benchmark exists because we needed to choose a provider
 and did not trust vendor-reported results. Logatra runs Sarvam saaras:v4 in
-production as of October 2026, even though saaras v3 leads on the held-out split
+production since 25 October 2026 (saaras v3 before that), even though v3 leads on the held-out split
 here. Every raw provider response is shipped so the scoring can be checked.
 
 ## Citation

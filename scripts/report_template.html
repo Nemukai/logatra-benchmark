@@ -98,7 +98,7 @@ h2{font-family:'Instrument Serif',serif;font-weight:400;font-size:30px;color:var
 .accbar .val{min-width:96px;text-align:right;line-height:1.15}
 .accbar .val small{display:block;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text-subtle);font-weight:400}
 .accbar .ciband{position:absolute;top:-3px;bottom:-3px;border-left:1.5px solid var(--text-muted);border-right:1.5px solid var(--text-muted);opacity:.55}
-.lbrow .rank.tie{font-size:17px}
+.lbrow .rank.tie{font-size:16px;white-space:nowrap}
 .lbdiv{padding:14px 20px 10px;font-size:12.5px;color:var(--text-subtle);border-bottom:.5px solid var(--hairline);background:var(--head-bg)}
 .lbrow.contrib{opacity:.62}
 .lbrow.contrib .rank{font-size:15px}
@@ -162,6 +162,7 @@ h2{font-family:'Instrument Serif',serif;font-weight:400;font-size:30px;color:var
   .grid2>div{border-right:none}
   .lbrow{grid-template-columns:34px 150px 1fr}
   .lbrow .cell{display:none}
+  .accbar{gap:8px}.accbar .val{min-width:66px}.accbar .val b{font-size:14px}
   .krow{grid-template-columns:110px 1fr}
   .krow .acc{grid-column:2;text-align:left;padding:0 18px 12px}
   .khead .kid{min-width:120px}
@@ -192,7 +193,7 @@ nav .links{align-items:center}
 
 <section id="leaderboard" class="reveal">
   <h2>Leaderboard</h2>
-  <p class="sub">Accuracy = 1 − word error rate, word-weighted (every reference word counts once), after normalizing away script choice (writing "start" vs "स्टार्ट" for the same spoken word is not an error). Computed on the exact same clips for every engine. The bracket on each bar is the 95% bootstrap confidence interval; "=" marks engines whose gap to a better-ranked one is within that noise, so they share a rank.</p>
+  <p class="sub">Accuracy = 1 − word error rate, word-weighted (every reference word counts once), after normalizing away script choice (writing "start" vs "स्टार्ट" for the same spoken word is not an error). Computed on the exact same clips for every engine. The bracket on each bar is the 95% bootstrap confidence interval. Ranks come from paired bootstrap tests: a range such as "1–2" means the data cannot separate those positions (a statistical tie), so read it as a tie rather than a strict order.</p>
   <div class="toggle" role="tablist" id="splitToggle">
     <button class="on" data-split="heldout">real-world 2026 audio</button>
     <button data-split="public">standard datasets</button>
@@ -304,18 +305,20 @@ safe("stat strip",function(){
 const HINTS={heldout:"Fresh Creative-Commons audio published Jan–Jun 2026: much less likely to be in training data than public sets (saaras v4, released Sep 2026, postdates it). Only engines that did not help write the references are ranked; contributors are listed below the line, unranked.",
   public:"FLEURS + MUCS + Gramvaani. Public data that models have likely seen in training; a flattering baseline."};
 const pct=v=>(v*100).toFixed(1);
-// Rank with ties: 1 + number of engines whose advantage is significant
-// (95% bootstrap CI on the gap excludes 0). Equal ranks are shown as "=k".
-function tieRanks(list,split){
+// Rank ranges: best possible rank = 1 + engines significantly better,
+// worst = n - engines significantly worse (significant = 95% bootstrap CI on
+// the paired gap excludes 0). "1–2" means the data cannot separate positions.
+function rankRanges(list,split){
   const pw=(DATA.pairwise_comparable||{})[split]||{};
   const better=(a,b)=>{const g=pw[a+"|"+b];return g?g.wer_sa_ci[0]>0:false}; // b significantly better than a
-  const rk={};list.forEach(a=>{rk[a]=1+list.filter(b=>b!==a&&better(a,b)).length});
+  const rk={};list.forEach(a=>{rk[a]=[1+list.filter(b=>b!==a&&better(a,b)).length,list.length-list.filter(b=>b!==a&&better(b,a)).length]});
   return rk;
 }
 function boardRow(r,label,cls,extra){
   const div=document.createElement("div");div.className="lbrow"+cls;
   const ci=r.d.wer_sa_ci?[acc(r.d.wer_sa_ci[1]),acc(r.d.wer_sa_ci[0])]:null;
-  div.innerHTML=`<div class="rank${String(label).startsWith("=")?" tie":""}"${String(label).startsWith("=")?' title="statistically tied: the 95% CI on the gap to an engine with the same rank includes 0"':""}>${label}</div>
+  const tie=String(label).includes("–")&&label!=="–";
+  div.innerHTML=`<div class="rank${tie?" tie":""}"${tie?' title="rank range: the 95% CIs on the gaps cannot separate these positions (statistical tie)"':""}>${label}</div>
     <div class="who"><span class="dot" style="background:${PCOLOR[r.p]}"></span>${PLABEL[r.p]}${r.flags.join("")}<small>${PSUB[r.p]}${extra||""}</small></div>
     <div class="accbar"><div class="bar"><div class="fill" style="background:${PCOLOR[r.p]}"></div>${ci?`<div class="ciband" style="left:${ci[0]}%;width:${Math.max(.4,ci[1]-ci[0])}%"></div>`:""}</div><div class="val"><b>${r.acc.toFixed(1)}%</b>${ci?`<small title="95% bootstrap confidence interval">${ci[0].toFixed(1)}–${ci[1].toFixed(1)}</small>`:""}</div></div>
     <div class="cell" title="median seconds to process one clip">${r.d.latency_median_s==null?"–":r.d.latency_median_s.toFixed(1)+" s/clip"}</div>
@@ -333,18 +336,17 @@ function renderBoard(split){
   const contrib=p=>split==="heldout"&&DATA.silver_caveat_providers.includes(p);
   rows.forEach(r=>{if(r.p==="voxtral")r.flags.push('<span class="flag" title="frequently repeats phrases endlessly and translates Hindi to English">loops & translates</span>')});
   const ranked=rows.filter(r=>!contrib(r.p)),unranked=rows.filter(r=>contrib(r.p));
-  const rk=tieRanks(ranked.map(r=>r.p),split);
-  const counts={};ranked.forEach(r=>counts[rk[r.p]]=(counts[rk[r.p]]||0)+1);
-  ranked.forEach(r=>{const k=rk[r.p];const label=counts[k]>1?"="+k:(k===1?"①":k);
-    el.appendChild(boardRow(r,label,k===1?" first":""))});
+  const rk=rankRanges(ranked.map(r=>r.p),split);
+  ranked.forEach(r=>{const[a,b]=rk[r.p];const label=a===b?(a===1?"①":a):a+"–"+b;
+    el.appendChild(boardRow(r,label,a===1?" first":""))});
   if(unranked.length){
     const dv=document.createElement("div");dv.className="lbdiv";
     dv.textContent="Not ranked on real-world audio: these engines helped write the reference transcripts, so part of their score is measured against their own output.";
     el.appendChild(dv);
     unranked.forEach(r=>{
       const ns=g(DATA.by_provider_comparable_nonself||{},r.p+"|"+split);
-      r.flags.push(`<span class="flag note" title="share of real-world clips whose reference is this engine's own output">own output is the reference on ${Math.round(r.d.self_ref_rate*100)}% of clips</span>`);
-      const extra=ns?` · on the ${ns.samples} clips where it is not the reference: ${acc(ns.wer_script_agnostic).toFixed(1)}%`+(ns.wer_sa_ci?` (${acc(ns.wer_sa_ci[1]).toFixed(1)}–${acc(ns.wer_sa_ci[0]).toFixed(1)})`:""):"";
+      r.flags.push('<span class="flag note" title="helped write the reference transcripts">unranked</span>');
+      const extra=`<br>own output is the reference on ${Math.round(r.d.self_ref_rate*100)}% of clips`+(ns?`; ${acc(ns.wer_script_agnostic).toFixed(1)}%`+(ns.wer_sa_ci?` (${acc(ns.wer_sa_ci[1]).toFixed(1)}–${acc(ns.wer_sa_ci[0]).toFixed(1)})`:"")+` on the other ${ns.samples}`:"");
       el.appendChild(boardRow(r,"–"," contrib",extra));
     });
   }

@@ -4,8 +4,8 @@ For every provider x sample with a cached response and a non-empty reference:
   - strict WER / CER (Indic-normalized)
   - script-agnostic WER (romanized comparison; fair to code-mix script choice)
   - latency (elapsed_s from the cache record) and RTF (latency / audio seconds)
-  - cost: OpenRouter providers report usage.cost per call; Sarvam priced at
-    Rs 0.75/min (Rs 83.5/USD), Whisper at $0.006/min.
+  - cost: provider-reported usage.cost when present (OpenRouter), else the
+    dated list price in logatra_benchmark/pricing.py (pricing.record_cost_usd).
 
 Aggregates: provider overall, provider x dataset, provider x language,
 provider x matrix cell (FLEURS language / dataset). Held-out rows score
@@ -53,14 +53,10 @@ from logatra_benchmark.manifest import (  # noqa: E402
     require_private_output,
 )
 from logatra_benchmark.metrics import score_asr, script_agnostic_wer  # noqa: E402
+from logatra_benchmark.pricing import record_cost_usd  # noqa: E402
 from logatra_benchmark.runner import _cache_path  # noqa: E402
 
 PROVIDERS = ("sarvam", "sarvam-saaras", "sarvam-saaras-v4", "whisper", "gemini", "voxtral", "gpt-audio")
-INR_PER_USD = 83.5
-FLAT_RATES_USD_PER_MIN = {"sarvam": 0.75 / INR_PER_USD,
-                          "sarvam-saaras": 0.75 / INR_PER_USD,
-                          "sarvam-saaras-v4": 0.75 / INR_PER_USD,
-                          "whisper": 0.006}
 SILVER_CONTRIBUTORS = {"sarvam", "gemini", "whisper"}
 # Which provider's verbatim output became the reference, for silver and
 # adjudicated rows: that provider scores ~0 on the row by construction.
@@ -184,6 +180,11 @@ def main() -> int:
     if args.carry_forward and Path(args.carry_forward).exists():
         carried_rows = [r for r in json.loads(Path(args.carry_forward).read_text())
                         if r.get("dataset") == "gramvaani" and r.get("split") in SPLITS]
+        # Re-price carried rows at today's list rates so costs stay comparable.
+        for r in carried_rows:
+            if r.get("audio_s"):
+                r["cost_usd"] = record_cost_usd(r["provider"], {"language": r.get("language"),
+                                                "code_mixed": r.get("code_mixed")}, r["audio_s"])
 
     results_dir = Path(args.results_dir)
     rows: list[dict] = []
@@ -220,10 +221,8 @@ def main() -> int:
                     continue
                 sc = score_asr(s.reference_text, rec["text"])
                 latency = rec.get("elapsed_s")
-                usage = (rec.get("raw") or {}).get("usage") or {}
-                cost = usage.get("cost")
-                if cost is None and prov in FLAT_RATES_USD_PER_MIN:
-                    cost = FLAT_RATES_USD_PER_MIN[prov] * audio_s / 60
+                cost = record_cost_usd(prov, {**rec, "language": s.language,
+                                              "code_mixed": s.code_mixed}, audio_s)
                 rows.append({
                     "sample_id": s.id,
                     "provider": prov,

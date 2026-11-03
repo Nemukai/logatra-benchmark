@@ -282,6 +282,12 @@ def probe_one(ydl, con, vid: str, cand_langs: list[str]) -> dict:
     if not [k for k in (info.get("subtitles") or {}) if k != "live_chat"]:
         return rej("no_manual_subs")
 
+    # Without a spoken-language signal, a video carrying manual tracks in many
+    # languages is most likely a translated set; we cannot tell which is original.
+    n_manual_langs = len({k.split("-")[0] for k in info.get("subtitles") or {} if k != "live_chat"})
+    if spoken is None and n_manual_langs >= 3:
+        return rej(f"translation_set_spoken_unknown({n_manual_langs}_langs)")
+
     vdir_tmp = C.DATA_DIR / "_probe" / vid
     last_reason = "no_manual_subs_in_language"
     for code in cand_langs:
@@ -333,6 +339,7 @@ def probe_one(ydl, con, vid: str, cand_langs: list[str]) -> dict:
             shutil.rmtree(vdir_tmp, ignore_errors=True)
             q["num_speakers_guess"] = guess_speakers(info, q)
             q["spoken_language_signal"] = spoken
+            q["manual_track_languages"] = n_manual_langs
             (vdir / "info.json").write_text(json.dumps(trimmed_info(info), ensure_ascii=False, indent=1))
             return {**row, "status": "accepted", "reason": None, "lang": final,
                     "sub_lang": key, "sub_path": str(dest.relative_to(C.DATA_DIR)), "quality": q}
@@ -594,7 +601,7 @@ def reason_key(r: str | None) -> str:
 
 def cmd_status(args, con) -> None:
     print(f"{'lang':6s} {'cand':>5s} {'acc':>4s} {'audio':>5s} {'chunks':>6s} {'min':>6s} "
-          f"{'fresh':>5s} {'older':>5s} {'rej':>4s} {'blk':>4s}")
+          f"{'fresh':>5s} {'older':>5s} {'rej':>4s} {'blk':>4s} {'pre_fresh':>9s} {'pre_older':>9s}")
     for code in C.LANGS:
         cand = con.execute("SELECT COUNT(*) FROM candidates WHERE lang=?", (code,)).fetchone()[0]
         st = Counter(r[0] for r in con.execute("SELECT status FROM videos WHERE lang=?", (code,)))
@@ -604,8 +611,13 @@ def cmd_status(args, con) -> None:
             "SELECT freshness FROM videos WHERE lang=? AND status='accepted'", (code,)))
         ch = con.execute("SELECT COUNT(*), COALESCE(SUM(c.duration),0) FROM chunks c JOIN videos v "
                          "USING(video_id) WHERE c.lang=? AND v.audio_status='done'", (code,)).fetchone()
+        # pre-screened: CC + 2026 + duration/title OK, but captions/audio were blocked
+        pre = Counter(r[0] for r in con.execute(
+            "SELECT freshness FROM videos WHERE lang=? AND status='blocked' "
+            "AND reason LIKE 'player_blocked%'", (code,)))
         print(f"{code:6s} {cand:5d} {st['accepted']:4d} {audio:5d} {ch[0]:6d} {ch[1]/60:6.1f} "
-              f"{fr['fresh']:5d} {fr['older']:5d} {st['rejected']:4d} {st['blocked']:4d}")
+              f"{fr['fresh']:5d} {fr['older']:5d} {st['rejected']:4d} {st['blocked']:4d} "
+              f"{pre['fresh']:9d} {pre['older']:9d}")
     reasons = Counter()
     for (r,) in con.execute("SELECT reason FROM videos WHERE status='rejected'"):
         reasons[reason_key(r)] += 1
