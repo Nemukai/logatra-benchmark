@@ -95,6 +95,19 @@ data/private/manifests/air.jsonl   repo manifest (split "private")
 | `no_text_layer` | scanned/image PDF |
 | `wrong_script` | clean text in an unexpected script |
 
+**Legacy-font conversion.** `krutidev.py` converts Kruti Dev / KrutiPad
+(Devanagari) spans to Unicode. It works per span and leaves English headers
+in Times/Arial untouched. The Hindi-belt RNUs (Gorakhpur Bhojpuri, Raipur,
+Jaipur, Patna, Lucknow) type their scripts in Kruti Dev, so their text comes
+out clean (`text_extractor: pymupdf+krutidev`). We have no converter yet for
+AkrutiAsmAnand (Assamese), AkPOri* (Odia/Sambalpuri), Nudi (Kannada),
+Shipmoo (Lepcha) or the Bengali-script fonts used for Manipuri.
+
+**Audio without scripts.** The listings carry audio but never a PDF for Bodo,
+Garo, Jaintia, Karbi, Kashmiri, Khasi, Kokborok, Ladakhi, Nagamese, Pahari,
+Sindhi, and almost never for Garhwali or Kumauni. `regional-text` lists no
+scripts for them either.
+
 The strict manifest `data/private/manifests/air.jsonl` fills
 `reference_text` only for `ok` rows. Other rows have `""`, meaning not yet
 transcribed. `manifest_with_suspect_text.jsonl` also includes the suspect

@@ -353,13 +353,14 @@ def lang_progress(con, code: str) -> tuple[int, float]:
     return r[0], r[1]
 
 
-def ordered_candidates(con, code: str) -> list[str]:
+def ordered_candidates(con, code: str, retry_blocked: bool = False) -> list[str]:
     """Tiered by language evidence, then filter freshness, round-robin over channels."""
     rows = con.execute(
         "SELECT c.video_id, c.channel_id, c.filter FROM candidates c "
         "LEFT JOIN videos v ON v.video_id = c.video_id "
-        "WHERE c.lang=? AND (v.video_id IS NULL OR v.status IN ('blocked','error'))",
-        (code,)).fetchall()
+        "WHERE c.lang=? AND (v.video_id IS NULL OR v.status='error' "
+        "  OR (v.status='blocked' AND (? OR v.reason NOT LIKE 'player_blocked%')))",
+        (code, int(retry_blocked))).fetchall()
     lang = C.LANGS[code]
     native = [s for s in lang.scripts if s is not C.LATIN]
     meta = {r["video_id"]: r for r in con.execute(
@@ -410,7 +411,7 @@ def cmd_probe(args, con) -> None:
     with ytd.YoutubeDL(ydl_opts(args.player_clients, ignore_no_formats_error=True)) as ydl:
         for code in langs:
             n_ok, secs = lang_progress(con, code)
-            todo = ordered_candidates(con, code)
+            todo = ordered_candidates(con, code, args.retry_blocked)
             log(f"[{code}] accepted={n_ok} captioned_min={secs/60:.1f} to_probe={len(todo)}")
             for i, vid in enumerate(todo[: args.limit or None]):
                 n_ok, secs = lang_progress(con, code)
@@ -637,6 +638,8 @@ def main() -> int:
         p.add_argument("--filters", nargs="*", default=["cc_subs_year", "cc_subs_month"],
                        choices=list(C.SEARCH_FILTERS))
         p.add_argument("--refresh", action="store_true", help="re-run searches already done")
+        p.add_argument("--retry-blocked", action="store_true",
+                       help="re-probe pre-screened videos whose player response was blocked")
         p.add_argument("--no-seeds", action="store_true", help="skip seeds.json channel listings")
         p.add_argument("--limit", type=int, default=0, help="max videos to probe per language")
         p.add_argument("--split", default="private", help="manifest split value")

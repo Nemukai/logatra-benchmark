@@ -48,7 +48,7 @@ _PAIRS: list[tuple[str, str]] = [
     ("Ok", "व"), ("O", "व्"),
     ("'k", "श"), ("'", "श्"), ('"k', "ष"), ('"', "ष्"), ("l", "स"), ("Lk", "स"), ("L", "स्"),
     ("g", "ह"),
-    ("È", "ीं"), ("z", "्र"), ("Ì", "द्द"), ("Í", "ट्ट"), ("Î", "ट्ठ"), ("Ï", "ड्ड"), ("Ñ", "कृ"),
+    ("È", "ीं"), ("Ê", "ीZ"), ("z", "्र"), ("Ì", "द्द"), ("Í", "ट्ट"), ("Î", "ट्ठ"), ("Ï", "ड्ड"), ("Ñ", "कृ"),
     ("Ò", "भ"), ("Ó", "्य"), ("Ô", "ड्ढ"), ("Ö", "झ्"), ("Ü", "श्"), ("Ú", "क्"),
     ("‚", "ॉ"), ("ks", "ो"), ("kS", "ौ"), ("k", "ा"), ("h", "ी"), ("q", "ु"), ("w", "ू"),
     ("`", "ृ"), ("s", "े"), ("S", "ै"), ("a", "ं"), ("¡", "ँ"), ("%", "ः"), ("W", "ॅ"),
@@ -85,8 +85,8 @@ def kruti_to_unicode(text: str) -> str:
     return out
 
 
-_KRUTI_FONT = re.compile(r"kruti\s*dev|k(?:ru)?tidev|devlys|kundli", re.I)
+_KRUTI_FONT = re.compile(r"krutidev|krutipad|devlys", re.I)
 
 
 def is_kruti_font(fonts: list[str]) -> bool:
-    return any(_KRUTI_FONT.search(f.replace(" ", "")) or _KRUTI_FONT.search(f) for f in fonts)
+    return any(_KRUTI_FONT.search(re.sub(r"#20|\s", "", f)) for f in fonts)

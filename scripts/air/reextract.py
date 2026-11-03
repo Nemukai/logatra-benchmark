@@ -12,6 +12,7 @@ Usage:
 from __future__ import annotations
 
 import json
+import shutil
 import sys
 from collections import Counter
 from pathlib import Path
@@ -37,6 +38,11 @@ def main() -> None:
         r.update(text_status=ext["status"], text_extractor=ext["extractor"],
                  text_quality=ext["quality"], char_count=len(ext["text"]))
         r["local"]["text"] = str(txt.relative_to(DATA))
+        if ext["status"] == "wrong_script":   # PDF is in another language: unpair, free disk
+            r["kept"] = False
+            r["reject_reasons"] = r.get("reject_reasons", []) + ["script_text_in_unexpected_script"]
+            shutil.rmtree(pdf.parent, ignore_errors=True)
+            r["local"] = {}
         p.write_text(json.dumps(r, ensure_ascii=False, indent=1), encoding="utf-8")
         stats[(r["language_key"], ext["status"])] += 1
     for (lang, st), n in sorted(stats.items()):

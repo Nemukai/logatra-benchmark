@@ -82,7 +82,7 @@ def orphan_sign_rate(text: str) -> float | None:
     return bad / n if n >= 50 else None
 
 
-ORPHAN_MAX = 0.01
+ORPHAN_MAX = 0.006
 
 
 def script_of(ch: str) -> str | None:
@@ -106,24 +106,44 @@ def extract_pymupdf(pdf: Path) -> str:
 def extract_pymupdf_converted(pdf: Path) -> str:
     """Span-level extraction converting spans set in a known legacy font.
 
-    Only spans whose font is recognised (currently Kruti Dev family) are
-    converted, so English headers in Times/Arial stay intact. Returns "" if
-    the PDF uses no convertible font.
+    Only spans whose font is recognised (currently the Kruti Dev family) are
+    converted, so English headers in Times/Arial stay intact. Quote-only spans
+    next to Kruti spans are treated as Kruti (Word autoformats its ' and "
+    keys, which are sha/ssa, into another font). Visual lines that PyMuPDF
+    splits (same baseline) are re-joined. Returns "" if nothing was converted.
     """
     import pymupdf
     from krutidev import is_kruti_font, kruti_to_unicode
+    quotes = set("'\"‘’“”")
     lines_out, converted = [], False
     with pymupdf.open(pdf) as d:
         for page in d:
             for block in page.get_text("dict")["blocks"]:
+                rows: list[tuple[float, list]] = []        # (baseline y, spans)
                 for line in block.get("lines", []):
-                    parts = []
                     for sp in line["spans"]:
-                        if is_kruti_font([sp["font"]]):
-                            parts.append(kruti_to_unicode(sp["text"]))
+                        y = sp["origin"][1]
+                        if rows and abs(rows[-1][0] - y) < 3:
+                            rows[-1][1].append(sp)
+                        else:
+                            rows.append((y, [sp]))
+                for _, spans in rows:
+                    spans.sort(key=lambda sp: sp["origin"][0])
+                    kruti = [is_kruti_font([sp["font"]]) for sp in spans]
+                    parts, run = [], []
+                    for k, sp in enumerate(spans):
+                        is_q = sp["text"].strip() and set(sp["text"].strip()) <= quotes
+                        near = (k > 0 and kruti[k - 1]) or (k + 1 < len(spans) and kruti[k + 1])
+                        if kruti[k] or (is_q and near):
+                            run.append(sp["text"])
                             converted = True
                         else:
+                            if run:
+                                parts.append(kruti_to_unicode("".join(run)))
+                                run = []
                             parts.append(sp["text"])
+                    if run:
+                        parts.append(kruti_to_unicode("".join(run)))
                     lines_out.append("".join(parts))
     return "\n".join(lines_out) if converted else ""
 
@@ -158,7 +178,9 @@ def classify(text: str, scripts: list[str]) -> dict:
     exp_share = exp_n / letters
     if expected == "Latn":
         status = "ok" if prof["Latn"] / letters > 0.8 and prof["Latin1"] / letters < 0.05 else (
-            "wrong_script" if dominant not in ("Latn", "Latin1") else "legacy_font_unconverted")
+            # a Latin-script language whose text is Latin-1 junk is a legacy-encoded
+            # Indic script, i.e. the PDF belongs to another language
+            "wrong_script")
         return {**out, "status": status, "expected_share": round(exp_share, 3),
                 "score": exp_share if status == "ok" else 0.1}
     # Indic / other non-Latin expected. Legacy fonts give mostly ASCII + Latin-1.
@@ -182,7 +204,9 @@ def classify(text: str, scripts: list[str]) -> dict:
     foreign = sum(1 for ch in text if unicodedata.category(ch)[0] in "LM"
                   and script_of(ch) not in allowed and not ("\u0900" <= ch <= "\u097F"
                   and "Deva" in allowed))
-    junk = (prof["Junk"] + foreign) / letters
+    # ASCII symbols standing in for unmapped conjunct glyphs ($ % & @ = ...)
+    symbols = sum(text.count(c) for c in "$%&*+<=>@#^|~{}[]\\")
+    junk = (prof["Junk"] + foreign + symbols) / letters
     if junk > 0.005:
         status = "unicode_glyphmap_suspect"
     score = exp_share + (0.5 if status == "ok" else 0) - (orphan or 0)
@@ -199,6 +223,8 @@ def clean_text(text: str) -> str:
     and must stay visible to classify().
     """
     text = unicodedata.normalize("NFC", text)
+    # Arabic presentation forms (Urdu/Gojri/Kashmiri PDFs) -> base letters
+    text = re.sub("[\ufb50-\ufdff\ufe70-\ufeff]+", lambda m: unicodedata.normalize("NFKC", m.group(0)), text)
     text = re.sub("[\uf000-\uf0ff]", "\u2022", text)  # Symbol/Wingdings bullets
     text = "".join(ch for ch in text if ch in "\n\t\u200c\u200d"
                    or unicodedata.category(ch) not in ("Cc", "Cf", "Cs", "Cn"))

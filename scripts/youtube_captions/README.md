@@ -37,7 +37,11 @@ $Y all --langs ta te        # everything, restricted to some languages
 ```
 
 Every step is resumable: searches already run, videos already probed and audio
-already fetched are skipped (`blocked`/`error` videos are retried). Use
+already fetched are skipped. `error` videos and hard bot-check blocks are
+retried; videos that were only *pre-screened* (license/date/title passed but
+the player response with captions and audio was bot-checked, reason
+`player_blocked(prescreen_ok)`) are retried with `probe --retry-blocked`,
+which is what to run on a network where YouTube serves player responses. Use
 `--player-clients tv,web_safari` to try other yt-dlp player clients.
 
 ## Pipeline and checks
