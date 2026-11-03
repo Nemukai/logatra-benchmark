@@ -39,6 +39,10 @@ def repo_rel(p: str | None) -> str | None:
 
 def main() -> None:
     items = [json.loads(p.read_text(encoding="utf-8")) for p in sorted(ITEMS.glob("*.json"))]
+    for r in items:  # re-extraction may reveal a wrong-language script: drop the pair
+        if r.get("kept") and r.get("text_status") == "wrong_script":
+            r["kept"] = False
+            r["reject_reasons"] = r.get("reject_reasons", []) + ["script_text_in_unexpected_script"]
     kept = [r for r in items if r.get("kept")]
     rows = []
     for r in sorted(kept, key=lambda r: (r["language_key"], r["bulletin_date"], r["bulletin_time"], r["id"])):

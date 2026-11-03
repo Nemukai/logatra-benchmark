@@ -6,12 +6,12 @@ mkdir -p logs
 
 echo "=== FULL RUN START $(date) ==="
 
-uv run python -m logatra_benchmark run \
+uv run python -m logatra_benchmark run --yes-spend \
   --manifest data/manifests/full_public.jsonl \
   --providers whisper --workers 8 >> logs/whisper.log 2>&1 &
 WPID=$!
 
-uv run python -m logatra_benchmark run \
+uv run python -m logatra_benchmark run --yes-spend \
   --manifest data/manifests/full_public.jsonl \
   --providers sarvam --workers 4 >> logs/sarvam.log 2>&1 &
 SPID=$!

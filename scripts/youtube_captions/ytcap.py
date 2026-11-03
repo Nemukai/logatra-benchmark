@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import random
 import re
 import shutil
@@ -95,7 +96,11 @@ def is_block_error(msg: str) -> bool:
 def cmd_discover(args, con) -> None:
     ytd = yt_dlp()
     langs = args.langs or list(C.LANGS)
-    with ytd.YoutubeDL(ydl_opts(extract_flat="in_playlist", playlistend=args.per_query)) as ydl:
+    # flat listings: yt-dlp would apply sleep_interval_requests per listed item,
+    # so it is disabled here; polite_sleep() spaces the searches instead
+    opts = ydl_opts(extract_flat="in_playlist", playlistend=args.per_query)
+    opts.pop("sleep_interval_requests")
+    with ytd.YoutubeDL(opts) as ydl:
         for code in langs:
             lang = C.LANGS[code]
             for query in lang.queries:
@@ -252,8 +257,13 @@ def probe_one(ydl, con, vid: str, cand_langs: list[str]) -> dict:
         return rej("no_upload_date")
     if info.get("live_status") in ("is_live", "is_upcoming"):
         return rej("live")
+    has_audio = any(f.get("acodec") not in (None, "none") for f in info.get("formats") or [])
+    player_blocked = not info.get("automatic_captions") and not has_audio
+    if not row["duration"]:  # missing when the player response is blocked
+        r = con.execute("SELECT MAX(duration) FROM candidates WHERE video_id=?", (vid,)).fetchone()
+        row["duration"] = r[0] if r and r[0] else None
     dur = row["duration"] or 0
-    if not (C.MIN_DURATION_S <= dur <= C.MAX_DURATION_S):
+    if row["duration"] and not (C.MIN_DURATION_S <= dur <= C.MAX_DURATION_S):
         return rej(f"duration:{dur}")
     title_l = (row["title"] or "").lower()
     if any(w in title_l for w in C.REJECT_TITLE_WORDS):
@@ -264,8 +274,7 @@ def probe_one(ydl, con, vid: str, cand_langs: list[str]) -> dict:
     # Bot-checked player response: metadata (license/date) came from the watch
     # page, but captions and audio formats are missing. Keep it as a pre-screened
     # candidate to retry later instead of wrongly rejecting it for "no subs".
-    has_audio = any(f.get("acodec") not in (None, "none") for f in info.get("formats") or [])
-    if not info.get("automatic_captions") and not has_audio:
+    if player_blocked:
         return {**row, "status": "blocked", "reason": "player_blocked(prescreen_ok)",
                 "lang": cand_langs[0]}
 
@@ -338,7 +347,7 @@ def lang_progress(con, code: str) -> tuple[int, float]:
 
 
 def ordered_candidates(con, code: str) -> list[str]:
-    """Round-robin across channels; newest-sorted search results first."""
+    """Tiered by language evidence, then filter freshness, round-robin over channels."""
     rows = con.execute(
         "SELECT c.video_id, c.channel_id, c.filter FROM candidates c "
         "LEFT JOIN videos v ON v.video_id = c.video_id "
@@ -365,6 +374,8 @@ def ordered_candidates(con, code: str) -> list[str]:
             return 2
         return 3
 
+    rank = {"seed": 0, "cc_subs_month": 1, "cc_subs_year": 2, "cc_subs_newest": 3, "cc_subs": 4}
+    rows = sorted(rows, key=lambda r: rank.get(r["filter"], 5))
     out, seen = [], set()
     for t in (0, 1, 2, 3):  # round-robin over channels within each tier
         by_ch: dict[str, list[str]] = defaultdict(list)
@@ -453,7 +464,8 @@ def cut_chunks(full_wav: Path, chunks: list, out_dir: Path, stem: str) -> list[P
 def chunk_speakers(markers: int, video_guess: int) -> int:
     if video_guess <= 1:
         return 1
-    return max(1, min(video_guess, markers)) if markers else 1
+    # a turn marker inside a chunk usually means someone else speaks in it
+    return min(video_guess, markers + 1) if markers else 1
 
 
 def segment_video(con, v, full_wav: Path | None) -> int:
@@ -558,9 +570,9 @@ def cmd_export(args, con) -> None:
             for c in chunks:
                 if not c["audio_path"]:
                     continue
-                rel = Path("..") / "youtube_captions" / c["audio_path"]
+                rel = os.path.relpath(C.DATA_DIR / c["audio_path"], manifest_dir)
                 man.write(json.dumps({
-                    "id": c["id"], "audio_path": str(rel), "reference_text": c["reference_text"],
+                    "id": c["id"], "audio_path": rel, "reference_text": c["reference_text"],
                     "language": v["lang"], "code_mixed": C.LANGS[v["lang"]].code_mixed,
                     "num_speakers": c["num_speakers"], "speaker_segments": None,
                     "source": f"youtube_captions:{v['video_id']}:manual",
@@ -610,7 +622,7 @@ def main() -> int:
         p.add_argument("--player-clients", default=None,
                        help="yt-dlp youtube player_client list, e.g. 'default' or 'tv,web_safari'")
         p.add_argument("--per-query", type=int, default=40)
-        p.add_argument("--filters", nargs="*", default=["cc_subs_newest", "cc_subs_year"],
+        p.add_argument("--filters", nargs="*", default=["cc_subs_year", "cc_subs_month"],
                        choices=list(C.SEARCH_FILTERS))
         p.add_argument("--refresh", action="store_true", help="re-run searches already done")
         p.add_argument("--no-seeds", action="store_true", help="skip seeds.json channel listings")

@@ -17,7 +17,7 @@ from pathlib import Path
 
 from .adapters import PROVIDERS
 from .manifest import VALID_SPLITS
-from .runner import plan, render_plan, render_table, run_benchmark
+from .runner import default_results_dir, plan, render_plan, render_table, run_benchmark
 
 
 def _providers(arg: str) -> list[str]:
@@ -37,8 +37,10 @@ def _add_common(p: argparse.ArgumentParser, multi_manifest: bool) -> None:
         p.add_argument("--manifest", required=True, help="path to JSONL manifest")
     p.add_argument("--providers", required=True,
                    help=f"comma-separated provider names ({', '.join(PROVIDERS)})")
-    p.add_argument("--results-dir", default="results",
-                   help="directory for cached raw responses (default: results/)")
+    p.add_argument("--results-dir", default=None,
+                   help="directory for cached raw responses (default: results/, or "
+                        "data/private/results/ for manifests under data/private/ or "
+                        "--split private)")
     p.add_argument("--split", choices=VALID_SPLITS, default=None,
                    help="restrict to one split (default: all)")
     p.add_argument("--limit", type=int, default=None,
@@ -126,6 +128,10 @@ def main(argv: list[str] | None = None) -> int:
 
         print(json.dumps(price_table(), indent=2, ensure_ascii=False))
         return 0
+
+    if args.command in ("estimate", "run") and args.results_dir is None:
+        manifests = args.manifest if isinstance(args.manifest, list) else [args.manifest]
+        args.results_dir = str(default_results_dir(manifests, args.split))
 
     if args.command == "estimate":
         p = plan(args.manifest, _providers(args.providers), args.results_dir,

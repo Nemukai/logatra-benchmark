@@ -88,7 +88,7 @@ Offline check of a caption file: `uv run python scripts/youtube_captions/caption
 
 ## Politeness and blocking
 
-3 to 7 s between searches, 6 to 14 s between videos, `sleep_interval_requests`
+3 to 7 s between searches, 4 to 9 s between videos, `sleep_interval_requests`
 1.5 s inside yt-dlp. No cookies, accounts or proxies. After 4 consecutive bot
 checks ("Sign in to confirm you're not a bot", HTTP 429) the step stops and
 the affected videos stay `blocked` in the DB, to be retried later or from a

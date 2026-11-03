@@ -222,6 +222,49 @@ def transcribe_sample(
     return record
 
 
+PRIVATE_RESULTS_DIR_NAME = "results"
+
+
+def _private_dir() -> Path | None:
+    try:
+        from .manifest import PRIVATE_DIR  # added with the "private" split
+    except ImportError:  # pragma: no cover - older manifest.py
+        return None
+    return Path(PRIVATE_DIR)
+
+
+def _is_private_path(path: str | Path) -> bool:
+    priv = _private_dir()
+    if priv is None:
+        return False
+    try:
+        Path(path).resolve().relative_to(priv.resolve())
+    except ValueError:
+        return False
+    return True
+
+
+def default_results_dir(manifest_paths: list[str | Path], split: str | None = None) -> Path:
+    """results/ normally; data/private/results/ for private manifests/splits.
+
+    Private-split audio must never leave data/private/ (gitignored, never
+    published), and that includes the provider transcripts we cache.
+    """
+    priv = _private_dir()
+    if priv is not None and (split == "private" or any(_is_private_path(m) for m in manifest_paths)):
+        return priv / PRIVATE_RESULTS_DIR_NAME
+    return Path("results")
+
+
+def _guard_private(samples: list[Sample], results_dir: Path) -> None:
+    if any(s.split == "private" for s in samples) and not _is_private_path(results_dir):
+        raise ValueError(
+            f"refusing to cache private-split transcripts under {results_dir}: use a results "
+            "dir inside data/private/ (the CLI defaults to data/private/results for private "
+            "manifests)"
+        )
+
+
 def select_samples(manifest_path: Path, split: str | None = None,
                    limit: int | None = None) -> list[Sample]:
     samples = load_manifest(manifest_path)
@@ -258,6 +301,8 @@ def run_benchmark(
     manifest_path = Path(manifest_path)
     results_dir = Path(results_dir)
     samples = select_samples(manifest_path, split, limit)
+    if not score_only:
+        _guard_private(samples, results_dir)
     budget = Budget(max_usd)
 
     agg: dict[str, dict[str, list]] = defaultdict(lambda: defaultdict(list))

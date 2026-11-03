@@ -132,6 +132,8 @@ def process(card: dict, lang: str, rnu: str, item_id: str, dup_urls: Counter) ->
     }
     if evidence["audio_url_shared_by_other_posts"] or evidence["pdf_url_shared_by_other_posts"]:
         reasons.append("media_url_reused_across_posts")
+    if ext["status"] == "wrong_script":
+        reasons.append("script_text_in_unexpected_script")
     if hdr_match is False:
         reasons.append("pdf_header_date_mismatch")
     if hdr_match is None and cdiff is not None and not (-1 <= cdiff <= 2):

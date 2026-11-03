@@ -116,10 +116,7 @@ class SarvamAdapter(HTTPAdapter):
         api_key = self._api_key()
         language_code = languages.resolve(self._table, language) or "unknown"
 
-        try:
-            duration = audio_duration_s(audio_path)
-        except FileNotFoundError:
-            raise
+        duration = audio_duration_s(audio_path)
         if duration > REST_MAX_SECONDS:
             if not self.supports_batch:
                 raise Unsupported(

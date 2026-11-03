@@ -54,18 +54,19 @@ MAX_INTRA_CHUNK_GAP_S = 1.5   # a longer gap between cues ends the chunk
 PAD_S = 0.15                  # padding around cue span (never into neighbours)
 
 # politeness
-SLEEP_BETWEEN_VIDEOS = (6.0, 14.0)
+SLEEP_BETWEEN_VIDEOS = (4.0, 9.0)
 SLEEP_BETWEEN_SEARCHES = (3.0, 7.0)
 YTDLP_SLEEP_REQUESTS = 1.5
 
 LICENSE_STR = "CC-BY 3.0 (YouTube), private split"
 
 # YouTube search "sp" filters (protobuf, base64). 0x30=CC, 0x28=subtitles,
-# 0x10=type video, 0x08 0x05 = uploaded this year; top-level 0x08 0x02 = sort by date.
+# 0x10=type video, 0x08 0x05 / 0x08 0x04 = uploaded this year / month; top-level 0x08 0x02 = sort by date.
 SEARCH_FILTERS = {
     "cc_subs": "EgQwASgB",
     "cc_subs_year": "EggIBRABKAEwAQ%3D%3D",
-    "cc_subs_newest": "CAISBhABKAEwAQ%3D%3D",
+    "cc_subs_newest": "CAISBhABKAEwAQ%3D%3D",   # sort-by-date; YouTube largely ignores it now
+    "cc_subs_month": "EggIBBABKAEwAQ%3D%3D",     # uploaded this month
 }
 
 # Unicode script ranges

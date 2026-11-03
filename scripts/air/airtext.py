@@ -103,6 +103,31 @@ def extract_pymupdf(pdf: Path) -> str:
         return "\n".join(p.get_text() for p in d)
 
 
+def extract_pymupdf_converted(pdf: Path) -> str:
+    """Span-level extraction converting spans set in a known legacy font.
+
+    Only spans whose font is recognised (currently Kruti Dev family) are
+    converted, so English headers in Times/Arial stay intact. Returns "" if
+    the PDF uses no convertible font.
+    """
+    import pymupdf
+    from krutidev import is_kruti_font, kruti_to_unicode
+    lines_out, converted = [], False
+    with pymupdf.open(pdf) as d:
+        for page in d:
+            for block in page.get_text("dict")["blocks"]:
+                for line in block.get("lines", []):
+                    parts = []
+                    for sp in line["spans"]:
+                        if is_kruti_font([sp["font"]]):
+                            parts.append(kruti_to_unicode(sp["text"]))
+                            converted = True
+                        else:
+                            parts.append(sp["text"])
+                    lines_out.append("".join(parts))
+    return "\n".join(lines_out) if converted else ""
+
+
 def extract_pdftotext(pdf: Path) -> str:
     exe = shutil.which("pdftotext")
     if not exe:
@@ -151,7 +176,13 @@ def classify(text: str, scripts: list[str]) -> dict:
     orphan = orphan_sign_rate(text)
     if orphan is not None and orphan > ORPHAN_MAX:
         status = "unicode_glyphmap_suspect"
-    junk = prof["Junk"] / letters
+    # letters/marks from any script other than the expected ones (or Latin):
+    # mis-mapped glyphs land in Sundanese, Ol Chiki, Greek, PUA, ...
+    allowed = set(scripts) | {"Latn", "Latin1"}
+    foreign = sum(1 for ch in text if unicodedata.category(ch)[0] in "LM"
+                  and script_of(ch) not in allowed and not ("\u0900" <= ch <= "\u097F"
+                  and "Deva" in allowed))
+    junk = (prof["Junk"] + foreign) / letters
     if junk > 0.005:
         status = "unicode_glyphmap_suspect"
     score = exp_share + (0.5 if status == "ok" else 0) - (orphan or 0)
@@ -182,7 +213,8 @@ def clean_text(text: str) -> str:
 
 def extract_best(pdf: Path, scripts: list[str]) -> dict:
     cands = []
-    for name, fn in (("pymupdf", extract_pymupdf), ("pdftotext", extract_pdftotext)):
+    for name, fn in (("pymupdf", extract_pymupdf), ("pdftotext", extract_pdftotext),
+                     ("pymupdf+krutidev", extract_pymupdf_converted)):
         try:
             t = clean_text(fn(pdf))
         except Exception as e:  # noqa: BLE001
