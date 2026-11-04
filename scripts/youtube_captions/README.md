@@ -42,7 +42,10 @@ retried; videos that were only *pre-screened* (license/date/title passed but
 the player response with captions and audio was bot-checked, reason
 `player_blocked(prescreen_ok)`) are retried with `probe --retry-blocked`,
 which is what to run on a network where YouTube serves player responses. Use
-`--player-clients tv,web_safari` to try other yt-dlp player clients.
+`--player-clients tv,web_safari` to try other yt-dlp player clients. When the
+primary client is bot-checked, probe retries the video through
+`--fallback-clients` (default `web_safari`), which on a flagged IP still
+returns license/date/title from the watch page: enough for a pre-screen.
 
 ## Pipeline and checks
 
@@ -72,6 +75,10 @@ which is what to run on a network where YouTube serves player responses. Use
    - Hindi vs Hinglish is decided from the caption text (Latin-word share in
      Devanagari tracks, Hindi function words in romanised tracks).
    - At most 2 videos per channel per language; up to 15 videos per language.
+     Probe order: CC+subtitle search hits from native-script channels, then
+     native-script titles, then the rest, then `seeds.json` channel listings;
+     round-robin over channels; channels with 3 non-CC or no-manual-subtitle
+     videos are skipped.
 3. **Fetch** (`fetch`): `bestaudio` -> ffmpeg 16 kHz mono `pcm_s16le` (the
    scorer estimates duration as `filesize / 32000`). Consecutive cues are
    merged up to 28 s (hard max 30 s), never splitting a cue; a gap > 1.5 s

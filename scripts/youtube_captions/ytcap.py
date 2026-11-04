@@ -177,12 +177,28 @@ def freshness(upload_date: str | None) -> str:
 
 
 def spoken_language(info: dict) -> str | None:
-    """Best signal YouTube gives for the spoken language, without any ASR call."""
-    for key in (info.get("automatic_captions") or {}):
-        if key.endswith("-orig"):
-            return key[:-5].split("-")[0]
-    lang = info.get("language")
-    return lang.split("-")[0] if lang else None
+    """Best signal YouTube gives for the spoken language, without any ASR call.
+
+    Auto-dubbed videos carry one audio track and one "(Original)" ASR track per
+    dub language, so a lone "xx-orig" key is trusted, otherwise the audio track
+    YouTube flags as original, otherwise yt-dlp's video-level `language`
+    (which it derives from the original audio track).
+    """
+    origs = [k[:-5].split("-")[0] for k in (info.get("automatic_captions") or {})
+             if k.endswith("-orig")]
+    if len(set(origs)) == 1:
+        return origs[0]
+    audio = [f for f in info.get("formats") or []
+             if f.get("acodec") not in (None, "none") and f.get("language")]
+    orig_audio = [f["language"].split("-")[0] for f in audio
+                  if (f.get("language_preference") or 0) >= 10
+                  or "original" in (f.get("format_note") or "").lower()]
+    if orig_audio:
+        return orig_audio[0]
+    if info.get("language"):
+        return info["language"].split("-")[0]
+    langs = {f["language"].split("-")[0] for f in audio}
+    return langs.pop() if len(langs) == 1 else None
 
 
 def manual_tracks(info: dict, prefixes: tuple) -> list[str]:
@@ -227,7 +243,7 @@ def trimmed_info(info: dict) -> dict:
     return d
 
 
-def probe_one(ydl, con, vid: str, cand_langs: list[str]) -> dict:
+def probe_one(ydl, con, vid: str, cand_langs: list[str], meta_ydl=None) -> dict:
     """Return a videos-row dict. Raises Blocked on bot checks."""
     url = f"https://www.youtube.com/watch?v={vid}"
     row = {"video_id": vid, "url": url, "probed_at": DB.now()}
@@ -244,13 +260,29 @@ def probe_one(ydl, con, vid: str, cand_langs: list[str]) -> dict:
         "license": info.get("license"), "duration": info.get("duration"),
         "category": ",".join(info.get("categories") or []),
     })
+    meta_failed = False
+    if not row["license"] and meta_ydl is not None:
+        # license/date live in the watch-page data, which can 429 even when the
+        # player response (captions) came through; ask the metadata client
+        try:
+            meta = meta_ydl.extract_info(url, download=False)
+            for k in ("license", "upload_date", "channel_id", "title"):
+                row[k] = row.get(k) or meta.get(k)
+        except Exception as exc:  # noqa: BLE001
+            log(f"    license lookup failed for {vid}: {str(exc)[:80]}")
+            meta_failed = True
     row["freshness"] = freshness(row["upload_date"])
+    if not row["license"] and meta_failed:
+        # lookup failed: unknown is not "not CC", keep it retryable
+        return {**row, "status": "blocked", "reason": "license_unknown", "lang": cand_langs[0]}
+    # yt-dlp leaves `license` unset for the Standard YouTube License, so a
+    # successful lookup without it is a rejection below
 
     def rej(reason, lang=None):
         return {**row, "status": "rejected", "reason": reason, "lang": lang or cand_langs[0]}
 
     if "creative commons" not in (row["license"] or "").lower():
-        return rej(f"license:{row['license']}")
+        return rej(f"license:{row['license'] or 'standard'}")
     if row["freshness"] == "stale":
         return rej(f"too_old:{row['upload_date']}")
     if row["freshness"] == "unknown":
@@ -323,6 +355,9 @@ def probe_one(ydl, con, vid: str, cand_langs: list[str]) -> dict:
             if code == "en-IN" and q["roman_hindi_share"] >= 0.08:
                 final = "hi-en"
                 q = CAP.caption_quality(cues, dur, C.LANGS["hi-en"])
+            if spoken and spoken not in C.LANGS[final].spoken:
+                last_reason = f"spoken_language_mismatch(spoken={spoken},track={key})"
+                continue
             reason = CAP.quality_reject_reason(q, C.LANGS[final])
             if reason:
                 last_reason = f"{key}:{reason}"
@@ -361,6 +396,12 @@ def ordered_candidates(con, code: str, retry_blocked: bool = False) -> list[str]
         "WHERE c.lang=? AND (v.video_id IS NULL OR v.status='error' "
         "  OR (v.status='blocked' AND (? OR v.reason NOT LIKE 'player_blocked%')))",
         (code, int(retry_blocked))).fetchall()
+    # channels with >= 3 non-CC / no-manual-sub videos are not worth more requests
+    non_cc = {r[0] for r in con.execute(
+        "SELECT channel_id FROM videos WHERE channel_id IS NOT NULL AND "
+        "(reason LIKE 'license:%' OR reason = 'license_unknown' OR reason = 'no_manual_subs') "
+        "GROUP BY channel_id HAVING COUNT(*) >= 3")}
+    rows = [r for r in rows if r["channel_id"] not in non_cc]
     lang = C.LANGS[code]
     native = [s for s in lang.scripts if s is not C.LATIN]
     meta = {r["video_id"]: r for r in con.execute(
@@ -373,14 +414,17 @@ def ordered_candidates(con, code: str, retry_blocked: bool = False) -> list[str]
         # Search localises titles of foreign videos into the query language, so a
         # native-script title alone is weak evidence; channel names are not
         # localised. Seeds and native channel names go first.
+        # CC+subtitles search hits from native-script channels first, then
+        # native-script titles. Seed channel listings carry neither filter
+        # (in practice mostly no manual subs), so they come last.
         m = meta[vid]
         if m["filter"] == "seed":
-            return 0
+            return 3
         if native_hit(m["channel"]):
-            return 1
+            return 0
         if native_hit(m["title"]) or not native:
-            return 2
-        return 3
+            return 1
+        return 2
 
     rank = {"seed": 0, "cc_subs_month": 1, "cc_subs_year": 2, "cc_subs_newest": 3, "cc_subs": 4}
     rows = sorted(rows, key=lambda r: rank.get(r["filter"], 5))
@@ -408,19 +452,40 @@ def cmd_probe(args, con) -> None:
     ytd = yt_dlp()
     langs = args.langs or list(C.LANGS)
     blocks = 0
-    with ytd.YoutubeDL(ydl_opts(args.player_clients, ignore_no_formats_error=True)) as ydl:
+    fb_opts = ydl_opts(args.fallback_clients, ignore_no_formats_error=True)
+    with ytd.YoutubeDL(ydl_opts(args.player_clients, ignore_no_formats_error=True)) as ydl, \
+            ytd.YoutubeDL(fb_opts) as fb_ydl:
         for code in langs:
             n_ok, secs = lang_progress(con, code)
             todo = ordered_candidates(con, code, args.retry_blocked)
             log(f"[{code}] accepted={n_ok} captioned_min={secs/60:.1f} to_probe={len(todo)}")
-            for i, vid in enumerate(todo[: args.limit or None]):
+            probed = 0
+            for vid in todo:
+                if args.limit and probed >= args.limit:
+                    break
+                ch = con.execute("SELECT channel_id FROM candidates WHERE video_id=? LIMIT 1",
+                                 (vid,)).fetchone()[0]
+                if ch and con.execute(
+                        "SELECT COUNT(*) FROM videos WHERE channel_id=? AND "
+                        "(reason LIKE 'license:%' OR reason='license_unknown' "
+                        " OR reason='no_manual_subs')",
+                        (ch,)).fetchone()[0] >= 3:
+                    continue  # channel shown not to use CC or manual captions
+                probed += 1
                 n_ok, secs = lang_progress(con, code)
                 if n_ok >= C.TARGET_VIDEOS or secs >= C.TARGET_SECONDS * 3:
                     break
                 # a hi query may yield hi-en and vice versa: let both be tried
                 cand_langs = [code] + (["hi-en"] if code == "hi" else ["hi"] if code == "hi-en" else [])
                 try:
-                    row = probe_one(ydl, con, vid, cand_langs)
+                    try:
+                        row = probe_one(ydl, con, vid, cand_langs,
+                                        fb_ydl if args.fallback_clients else None)
+                    except Blocked:
+                        if not args.fallback_clients:
+                            raise
+                        # metadata-only pre-screen through another client
+                        row = probe_one(fb_ydl, con, vid, cand_langs)
                     blocks = 0
                 except Blocked as exc:
                     blocks += 1
@@ -602,7 +667,8 @@ def reason_key(r: str | None) -> str:
 
 def cmd_status(args, con) -> None:
     print(f"{'lang':6s} {'cand':>5s} {'acc':>4s} {'audio':>5s} {'chunks':>6s} {'min':>6s} "
-          f"{'fresh':>5s} {'older':>5s} {'rej':>4s} {'blk':>4s} {'pre_fresh':>9s} {'pre_older':>9s}")
+          f"{'fresh':>5s} {'older':>5s} {'rej':>4s} {'blk':>4s} {'pre_fresh':>9s} {'pre_older':>9s} "
+          f"{'plan_ch':>7s} {'plan_min':>8s}")
     for code in C.LANGS:
         cand = con.execute("SELECT COUNT(*) FROM candidates WHERE lang=?", (code,)).fetchone()[0]
         st = Counter(r[0] for r in con.execute("SELECT status FROM videos WHERE lang=?", (code,)))
@@ -612,13 +678,16 @@ def cmd_status(args, con) -> None:
             "SELECT freshness FROM videos WHERE lang=? AND status='accepted'", (code,)))
         ch = con.execute("SELECT COUNT(*), COALESCE(SUM(c.duration),0) FROM chunks c JOIN videos v "
                          "USING(video_id) WHERE c.lang=? AND v.audio_status='done'", (code,)).fetchone()
+        # planned: cue-aligned chunks computed from captions (audio may be missing)
+        plan = con.execute("SELECT COUNT(*), COALESCE(SUM(c.duration),0) FROM chunks c JOIN videos v "
+                           "USING(video_id) WHERE c.lang=? AND v.status='accepted'", (code,)).fetchone()
         # pre-screened: CC + 2026 + duration/title OK, but captions/audio were blocked
         pre = Counter(r[0] for r in con.execute(
             "SELECT freshness FROM videos WHERE lang=? AND status='blocked' "
             "AND reason LIKE 'player_blocked%'", (code,)))
         print(f"{code:6s} {cand:5d} {st['accepted']:4d} {audio:5d} {ch[0]:6d} {ch[1]/60:6.1f} "
               f"{fr['fresh']:5d} {fr['older']:5d} {st['rejected']:4d} {st['blocked']:4d} "
-              f"{pre['fresh']:9d} {pre['older']:9d}")
+              f"{pre['fresh']:9d} {pre['older']:9d} {plan[0]:7d} {plan[1]/60:8.1f}")
     reasons = Counter()
     for (r,) in con.execute("SELECT reason FROM videos WHERE status='rejected'"):
         reasons[reason_key(r)] += 1
@@ -634,6 +703,9 @@ def main() -> int:
         p.add_argument("--langs", nargs="*", choices=list(C.LANGS))
         p.add_argument("--player-clients", default=None,
                        help="yt-dlp youtube player_client list, e.g. 'default' or 'tv,web_safari'")
+        p.add_argument("--fallback-clients", default="web_safari",
+                       help="client(s) for a metadata pre-screen when the primary is bot-checked "
+                            "('' to disable)")
         p.add_argument("--per-query", type=int, default=40)
         p.add_argument("--filters", nargs="*", default=["cc_subs_year", "cc_subs_month"],
                        choices=list(C.SEARCH_FILTERS))
