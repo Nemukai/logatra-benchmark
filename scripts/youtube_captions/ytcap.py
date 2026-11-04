@@ -45,7 +45,8 @@ import config as C  # noqa: E402
 import db as DB  # noqa: E402
 
 BLOCK_MARKERS = ("confirm you", "not a bot", "sign in to confirm", "http error 429",
-                 "too many requests", "page needs to be reloaded")
+                 "too many requests", "page needs to be reloaded",
+                 "http error 403")  # googlevideo 403 = missing PO token
 MAX_CONSECUTIVE_BLOCKS = 4
 
 
