@@ -21,3 +21,4 @@ data/manifests/gramvaani_hi.jsonl
 
 # private fresh-audio splits (never commit)
 data/private/
+logatra-private-index-*.tgz
