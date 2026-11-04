@@ -377,7 +377,12 @@ def probe_one(ydl, con, vid: str, cand_langs: list[str], meta_ydl=None) -> dict:
             q["spoken_language_signal"] = spoken
             q["manual_track_languages"] = n_manual_langs
             (vdir / "info.json").write_text(json.dumps(trimmed_info(info), ensure_ascii=False, indent=1))
-            return {**row, "status": "accepted", "reason": None, "lang": final,
+            # Caption checks cannot tell Indian from other English: hold en-IN for a
+            # human provenance check (promote with: UPDATE videos SET status='accepted')
+            status = "needs_review" if final == "en-IN" else "accepted"
+            return {**row, "status": status,
+                    "reason": "en-IN provenance unverified" if final == "en-IN" else None,
+                    "lang": final,
                     "sub_lang": key, "sub_path": str(dest.relative_to(C.DATA_DIR)), "quality": q}
     shutil.rmtree(vdir_tmp, ignore_errors=True)
     return rej(last_reason)

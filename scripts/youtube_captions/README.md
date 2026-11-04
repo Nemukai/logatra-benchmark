@@ -74,6 +74,10 @@ returns license/date/title from the watch page: enough for a pre-screen.
      letters, not words, because Dravidian words are long.
    - Hindi vs Hinglish is decided from the caption text (Latin-word share in
      Devanagari tracks, Hindi function words in romanised tracks).
+   - `en-IN` candidates that pass every check get status `needs_review`:
+     nothing in captions distinguishes Indian from other English, so a human
+     confirms provenance (`UPDATE videos SET status='accepted' ...`). In the
+     first run all 5 such videos were non-Indian and were rejected.
    - At most 2 videos per channel per language; up to 15 videos per language.
      Probe order: CC+subtitle search hits from native-script channels, then
      native-script titles, then the rest, then `seeds.json` channel listings;
