@@ -1,4 +1,4 @@
-# Benchmark status (3 Sep 2026, saaras v4 added)
+# Benchmark status (12 Nov 2026)
 
 Scoring is complete and reproducible offline from the committed results
 cache. Nothing bills unless a fresh `run` is started explicitly.
@@ -22,15 +22,18 @@ cache. Nothing bills unless a fresh `run` is started explicitly.
   ElevenLabs Scribe ~$7, AssemblyAI ~$3, Google ~$16. Verify current
   pricing before running; use `--workers` conservatively on new providers.
 
-## Publishing (3 Sep 2026)
+## Publishing (done)
 - Legal review done: Gramvaani (academic-use-only, no redistribution grant)
   is stripped from the committed manifests and excluded from the dataset;
   FLEURS (CC-BY-4.0), MUCS (CC-BY-SA-4.0) and the held-out YouTube chunks
   (CC-BY) ship with attribution. See README "Data and licensing".
 - Code: public at https://github.com/Nemukai/logatra-benchmark.
 - Report: hosted at https://nemukai.com/labs/logatra-benchmark.
-- Hugging Face dataset + Space: `scripts/publish_hf.py` stages and uploads;
-  needs a write token (`HF_TOKEN`).
+- Hugging Face dataset and Space: live since 29 Oct 2026 at
+  https://huggingface.co/datasets/CooledNik/logatra-benchmark and
+  https://huggingface.co/spaces/CooledNik/logatra-benchmark
+  (`scripts/publish_hf.py`, needs `HF_TOKEN` with write scope to re-upload).
+  The Labs page links to the dataset.
 
 ## Next (unpaid)
 - Human spot-listen of a sample of held-out references (silver to gold).

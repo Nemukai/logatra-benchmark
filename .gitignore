@@ -18,3 +18,13 @@ data/manifests/gramvaani_hi.jsonl
 # API keys for local runs (see scripts/_*.sh)
 .env
 .env.*
+
+# macOS
+.DS_Store
+
+# private Logatra data archives (never published)
+private-data/
+
+# Logatra product A/B experiments (prompts and outputs stay local)
+scripts/ab_*.py
+report/ab_*
