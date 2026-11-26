@@ -131,8 +131,22 @@ uv run python scripts/score_report.py --out report/data.json \
     data/manifests/full_public.jsonl data/manifests/heldout_yt.silver.jsonl
 uv run python scripts/export_explorer.py
 uv run python scripts/build_report.py     # writes report/index.html
-uv run pytest                             # normalization + silver tests
+uv run --extra dev pytest                 # normalization, silver, report build
 ```
+
+The report has one template (`scripts/report_template.html`) and two builds.
+The default is the standalone page in `report/`, which opens over `file://`
+and is what the Hugging Face Space serves. The copy at
+[nemukai.com/labs/logatra-benchmark](https://nemukai.com/labs/logatra-benchmark)
+lives in the Website repo and is built with `--target site`:
+
+```bash
+uv run python scripts/build_report.py --target site \
+    --out ../Website/public/labs/logatra-benchmark/index.html
+cp report/cases.js ../Website/public/labs/logatra-benchmark/cases.js   # only when the cases changed
+```
+
+Change the page in the template, never in a built copy.
 
 To run systems fresh (needs keys, spends money):
 
